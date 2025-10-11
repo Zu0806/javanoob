@@ -1,0 +1,7 @@
+https://chatgpt.com/c/68ea5e9a-2410-8320-8900-e7e0594c2cd7
+
+
+
+cd "C:\Users\User\Documents\Github\javanoob\Material Management System\mms"
+dir
+.\mvnw.cmd spring-boot:run

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>物料管理</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI"; margin: 24px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background: #f5f5f5; text-align: left; }
+    form.inline { display: inline; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
+    .row>div { display:flex; flex-direction:column; }
+    input,button { padding:8px; }
+  </style>
+</head>
+<body>
+<h1>物料管理</h1>
+
+<h2>新增物料</h2>
+<form th:action="@{/items}" method="post" th:object="${item}">
+  <div class="row">
+    <div><label>名稱</label><input th:field="*{name}" required placeholder="螺絲 M3"/></div>
+    <div><label>SKU</label><input th:field="*{sku}" required placeholder="唯一代碼"/></div>
+    <div><label>單位</label><input th:field="*{unit}" required placeholder="pcs/box/kg"/></div>
+    <div><label>初始數量</label><input type="number" th:field="*{quantity}" min="0" value="0"/></div>
+    <div><label>儲位</label><input th:field="*{location}" placeholder="A1-3"/></div>
+    <div><button type="submit">新增</button></div>
+  </div>
+</form>
+
+<h2>物料清單</h2>
+<table>
+  <thead><tr><th>ID</th><th>名稱</th><th>SKU</th><th>單位</th><th>數量</th><th>儲位</th><th>操作</th></tr></thead>
+  <tbody>
+    <tr th:each="it : ${items}">
+      <td th:text="${it.id}">1</td>
+      <td th:text="${it.name}">螺絲</td>
+      <td th:text="${it.sku}">SCREW-M3</td>
+      <td th:text="${it.unit}">pcs</td>
+      <td th:text="${it.quantity}">100</td>
+      <td th:text="${it.location}">A1-3</td>
+      <td>
+        <form class="inline" th:action="@{|/items/${it.id}/adjust|}" method="post">
+          <input type="hidden" name="delta" value="1"><button type="submit">+1</button>
+        </form>
+        <form class="inline" th:action="@{|/items/${it.id}/adjust|}" method="post">
+          <input type="hidden" name="delta" value="-1"><button type="submit">-1</button>
+        </form>
+        <form class="inline" th:action="@{|/items/${it.id}/delete|}" method="post" onsubmit="return confirm('確定刪除？')">
+          <button type="submit">刪除</button>
+        </form>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

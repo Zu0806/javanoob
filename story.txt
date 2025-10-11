@@ -1,3 +1,0 @@
-DIALOGUE,intro,老師,歡迎來到新學校！
-CHOICE,intro,0,點頭回應,next1,謝塵,5
-CHOICE,intro,1,低頭不語,next2,謝塵,-2
