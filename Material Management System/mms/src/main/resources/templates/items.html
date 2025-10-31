@@ -5,55 +5,244 @@
   <title>物料管理</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI"; margin: 24px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 16px; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
-    th { background: #f5f5f5; text-align: left; }
-    form.inline { display: inline; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
-    .row>div { display:flex; flex-direction:column; }
-    input,button { padding:8px; }
+    :root{
+      --blue:#133b74;        /* 標題藍 */
+      --blue-light:#cfe6fb;  /* 表頭淡藍 */
+      --border:#d9d9d9;
+      --fg:#222;
+      --muted:#6b7280;
+      --chip:#f1f3f5;        /* 輸入底色 */
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--fg); margin:0;}
+    main{padding:24px; margin-top:84px;} /* 預留頂部高度 */
+
+    /* ====== 頂部標題條 ====== */
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      width:100%; background:var(--blue); color:#fff;
+      box-shadow:0 1px 0 rgba(0,0,0,.08);
+      transition:all .25s ease;
+    }
+    .topbar-inner{
+      max-width:1200px; margin:0 auto;
+      display:flex; align-items:center; justify-content:center;
+      height:84px; padding:0 24px;
+      transition:height .25s ease, padding .25s ease;
+    }
+    .title{
+      font-weight:800; font-size:28px; letter-spacing:2px;
+      transition:all .25s ease; white-space:nowrap;
+    }
+    .topbar.shrink .topbar-inner{ height:54px; padding:0 16px; justify-content:flex-start; }
+    .topbar.shrink .title{ font-weight:700; font-size:18px; letter-spacing:1px; }
+
+    /* ====== 表格 ====== */
+    table{border-collapse:collapse; width:100%; margin-top:16px;}
+    th,td{border:1px solid var(--border); padding:8px; vertical-align:top;}
+    th{background:var(--blue-light); text-align:left;}
+
+    /* ====== 表單：對齊＆等高 ====== */
+    .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+    .row>.field{ display:flex; flex-direction:column; min-width:180px; flex:1 1 220px; }
+    .field--actions{ align-self:flex-end; display:flex; gap:8px; }
+
+    label{ font-size:12px; color:var(--muted); margin:2px 0 6px; }
+
+    /* 統一高度，select 與 input 對齊 */
+    input, select, button{
+      height:44px;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      background:var(--chip);
+      outline:none;
+    }
+    input:focus, select:focus{ background:#fff; border-color:#94b7ff; box-shadow:0 0 0 3px rgba(25,118,210,.15); }
+    select{ -webkit-appearance:none; -moz-appearance:none; appearance:none; line-height:1.2; }
+
+    .btn{ cursor:pointer; border-radius:12px; }
+    .btn-primary{ background:var(--blue); color:#fff; border-color:transparent; }
+    .btn-primary:hover{ filter:brightness(1.05); }
+    .btn-ghost{ background:#fff; border:1px solid var(--blue); color:var(--blue); }
+    .btn-ghost:hover{ background:#f5f8ff; }
+
+    .form-help{ margin-top:6px; color:var(--muted); font-size:12px; }
+
+    form.inline{ display:inline; }
+
+    @media (max-width:640px){
+      .row>.field{ min-width:48%; }
+      main{ padding:16px; margin-top:72px; }
+      .topbar-inner{ height:72px; }
+    }
   </style>
 </head>
 <body>
-<h1>物料管理</h1>
+  <!-- 頂部藍條＋標題（置中；滾動後變細靠左） -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-inner">
+      <div class="title">家庭物料管理</div>
+    </div>
+  </header>
 
-<h2>新增物料</h2>
-<form th:action="@{/items}" method="post" th:object="${item}">
-  <div class="row">
-    <div><label>名稱</label><input th:field="*{name}" required placeholder="螺絲 M3"/></div>
-    <div><label>SKU</label><input th:field="*{sku}" placeholder="唯一代碼(選填)"/></div>
-    <div><label>單位</label><input th:field="*{unit}" required placeholder="pcs/box/kg"/></div>
-    <div><label>初始數量</label><input type="number" th:field="*{quantity}" min="0" value="0"/></div>
-    <div><label>儲位</label><input th:field="*{location}" placeholder="客廳"/></div>
-    <div><button type="submit">新增</button></div>
-  </div>
-</form>
+  <main>
+    <h2 style="margin:0 0 12px">新增／查詢</h2>
 
-<h2>物料清單</h2>
-<table>
-  <thead><tr><th>ID</th><th>名稱</th><th>SKU</th><th>單位</th><th>數量</th><th>儲位</th><th>操作</th></tr></thead>
-  <tbody>
-    <tr th:each="it : ${items}">
-      <td th:text="${it.id}">1</td>
-      <td th:text="${it.name}">螺絲</td>
-      <td th:text="${it.sku}">SCREW-M3</td>
-      <td th:text="${it.unit}">pcs</td>
-      <td th:text="${it.quantity}">100</td>
-      <td th:text="${it.location}">A1-3</td>
-      <td>
-        <form class="inline" th:action="@{|/items/${it.id}/adjust|}" method="post">
-          <input type="hidden" name="delta" value="1"><button type="submit">+1</button>
-        </form>
-        <form class="inline" th:action="@{|/items/${it.id}/adjust|}" method="post">
-          <input type="hidden" name="delta" value="-1"><button type="submit">-1</button>
-        </form>
-        <form class="inline" th:action="@{|/items/${it.id}/delete|}" method="post" onsubmit="return confirm('確定刪除？')">
-          <button type="submit">刪除</button>
-        </form>
-      </td>
-    </tr>
-  </tbody>
-</table>
+    <!-- 同一組欄位；「新增」走 POST /items、「查詢」走 GET /items/search -->
+    <form th:object="${item}" id="createSearchForm" method="post" th:action="@{/items}">
+      <div class="row">
+        <div class="field">
+          <label>名稱（查詢時必填）</label>
+          <input th:field="*{name}" id="nameField" placeholder="螺絲 M3"/>
+        </div>
+
+        <div class="field">
+          <label>SKU</label>
+          <input th:field="*{sku}" placeholder="唯一代碼（選填）"/>
+        </div>
+
+        <div class="field">
+          <label>單位</label>
+          <input th:field="*{unit}" placeholder="pcs/box/kg（選填）"/>
+        </div>
+
+        <div class="field" style="max-width:220px">
+          <label>數量（新增用）</label>
+          <input type="number" th:field="*{quantity}" min="0" value="0"/>
+        </div>
+
+        <div class="field">
+          <label>儲位</label>
+          <select id="locationSelect-create">
+            <option value="" selected>選擇地點（選填或新增時必填）</option>
+            <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}">A1-3</option>
+            <option value="__NEW__">＋新增地點…</option>
+          </select>
+          <input id="locationInput-create" type="text" placeholder="輸入新地點" style="display:none;"/>
+          <input type="hidden" th:field="*{location}" id="locationField-create"/>
+        </div>
+
+        <!-- 動作按鈕：同一排、底線對齊 -->
+        <div class="field--actions">
+          <button type="submit" class="btn btn-primary" id="btnCreate">新增</button>
+          <button class="btn btn-ghost" id="btnSearch" formaction="/items/search" formmethod="get">查詢</button>
+        </div>
+      </div>
+
+      <!-- 小字移到整列下方，避免撐高欄位 -->
+      <div class="form-help">
+        沒有地點可選時，先選「＋新增地點…」並輸入；查詢時僅「名稱」必填，其餘選填。
+      </div>
+    </form>
+
+    <h2 style="margin:24px 0 8px">物料清單</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>名稱</th><th>SKU</th><th>單位</th><th>數量</th><th>儲位</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="it : ${items}">
+          <td th:text="${it.id}">1</td>
+          <td th:text="${it.name}">螺絲</td>
+          <td th:text="${it.sku}">SCREW-M3</td>
+          <td th:text="${it.unit}">pcs</td>
+          <td th:text="${it.quantity}">100</td>
+
+          <td>
+            <div><strong th:text="${it.location}">A1-3</strong></div>
+            <form class="inline" th:action="@{|/items/${it.id}/move|}" method="post" onsubmit="return beforeMoveSubmit(this)">
+              <select class="locSelect">
+                <option value="" selected>選擇新地點</option>
+                <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}">A1-3</option>
+                <option value="__NEW__">＋新增地點…</option>
+              </select>
+              <input class="locInput" type="text" placeholder="輸入新地點" style="display:none;" />
+              <input type="hidden" name="location" class="locHidden" />
+              <button type="submit" class="btn btn-ghost">移動</button>
+            </form>
+          </td>
+
+          <td>
+            <form class="inline" th:action="@{|/items/${it.id}/adjust|}" method="post">
+              <input type="hidden" name="delta" value="1"><button type="submit" class="btn btn-ghost">+1</button>
+            </form>
+            <form class="inline" th:action="@{|/items/${it.id}/adjust|}" method="post">
+              <input type="hidden" name="delta" value="-1"><button type="submit" class="btn btn-ghost">-1</button>
+            </form>
+            <form class="inline" th:action="@{|/items/${it.id}/delete|}" method="post" onsubmit="return confirm('確定刪除？')">
+              <button type="submit" class="btn btn-ghost">刪除</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script>
+    /* ====== 頂部縮小＆左對齊 ====== */
+    const topbar = document.getElementById('topbar');
+    const shrinkAt = 20;
+    const onScroll = () => { if (window.scrollY > shrinkAt) topbar.classList.add('shrink'); else topbar.classList.remove('shrink'); };
+    document.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+    /* ====== 儲位：下拉／自訂 ====== */
+    const selCreate = document.getElementById('locationSelect-create');
+    const inputCreate = document.getElementById('locationInput-create');
+    const fieldCreate = document.getElementById('locationField-create');
+    function syncCreateLocation(){
+      const v = selCreate.value;
+      if (v === '__NEW__'){ inputCreate.style.display=''; fieldCreate.value = inputCreate.value.trim(); }
+      else{ inputCreate.style.display='none'; fieldCreate.value = v || ''; }
+    }
+    selCreate.addEventListener('change', syncCreateLocation);
+    inputCreate.addEventListener('input', () => { if (selCreate.value==='__NEW__') fieldCreate.value = inputCreate.value.trim(); });
+
+    /* ====== 新增／查詢：驗證條件 ====== */
+    const formCS = document.getElementById('createSearchForm');
+    const nameField = document.getElementById('nameField');
+    const btnCreate = document.getElementById('btnCreate');
+    const btnSearch = document.getElementById('btnSearch');
+
+    btnCreate.addEventListener('click', (e)=>{
+      syncCreateLocation();
+      if (!fieldCreate.value){ e.preventDefault(); alert('新增時請選擇或輸入儲位'); return; }
+      formCS.method = 'post'; // 由 th:action=/items
+    });
+
+    btnSearch.addEventListener('click', (e)=>{
+      if (!nameField.value.trim()){ e.preventDefault(); alert('請輸入名稱再查詢'); return; }
+      // 查詢時將空欄位暫時停用，避免送空參數
+      Array.from(formCS.elements).forEach(el=>{
+        if(['INPUT','SELECT'].includes(el.tagName) && !el.value) el.name && (el.disabled = true);
+      });
+    });
+
+    /* ====== 列表中移動儲位 ====== */
+    function beforeMoveSubmit(form){
+      const sel=form.querySelector('.locSelect');
+      const inp=form.querySelector('.locInput');
+      const hid=form.querySelector('.locHidden');
+      if (sel.value==='__NEW__'){
+        if(!inp.value.trim()){ alert('請輸入新地點'); return false; }
+        hid.value=inp.value.trim();
+      }else{
+        if(!sel.value){ alert('請選擇地點'); return false; }
+        hid.value=sel.value;
+      }
+      return true;
+    }
+    document.addEventListener('change', (e)=>{
+      if(e.target && e.target.classList.contains('locSelect')){
+        const sel=e.target, form=sel.closest('form'), inp=form.querySelector('.locInput');
+        if(sel.value==='__NEW__'){ inp.style.display=''; inp.focus(); }
+        else{ inp.style.display='none'; inp.value=''; }
+      }
+    });
+    window.beforeMoveSubmit = beforeMoveSubmit;
+  </script>
 </body>
 </html>

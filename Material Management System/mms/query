@@ -1,1 +1,35 @@
 MySQL80
+
+
+-- 1. 建立資料庫 
+CREATE DATABASE IF NOT EXISTS household_inventory_db 
+DEFAULT CHARACTER SET utf8mb4 
+COLLATE utf8mb4_unicode_ci;
+
+-- 選擇使用這個資料庫
+USE household_inventory_db;
+
+
+-- 2. 建立 categories 表格
+CREATE TABLE categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY, -- 設定為主鍵並自動遞增
+    name VARCHAR(50) NOT NULL UNIQUE             -- 類別名稱不能重複
+);
+
+-- 3. 建立 items 表格
+CREATE TABLE items (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    quantity INT NOT NULL DEFAULT 0,  -- 預設數量為 0
+    unit VARCHAR(20),
+    location VARCHAR(100),
+    purchase_date DATE,
+    expiry_date DATE,
+    category_id INT NOT NULL,
+
+    -- 設定外鍵約束：確保 category_id 必須存在於 categories 表格中
+    CONSTRAINT fk_category
+        FOREIGN KEY (category_id) 
+        REFERENCES categories(category_id)
+        ON DELETE RESTRICT  -- 限制刪除：如果 category_id 有物資使用，則無法刪除
+);
