@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>物料管理</title>
+  <title>家庭物料管理</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root{
@@ -13,12 +13,26 @@
       --muted:#6b7280;
       --chip:#f1f3f5;        /* 輸入底色 */
       --radius:16px;
+      --danger:#ef4444;
+      --warn:#f97316;
+      --success:#16a34a;
+      --bg-soft:#f4f7fb;
     }
     *{box-sizing:border-box}
-    body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--fg); margin:0;}
-    main{padding:24px; margin-top:84px;} /* 預留頂部高度 */
+    body{
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+      color:var(--fg);
+      margin:0;
+      background:
+        radial-gradient(circle at 0 0,rgba(19,59,116,.16),transparent 55%),
+        radial-gradient(circle at 100% 100%,rgba(19,59,116,.12),transparent 55%),
+        repeating-linear-gradient(45deg,rgba(255,255,255,.24) 0,rgba(255,255,255,.24) 1px,transparent 1px,transparent 6px),
+        #f6f8fc;
+      background-attachment:fixed;
+    }
+    main{padding:24px; margin-top:84px; max-width:1200px; margin-left:auto; margin-right:auto;}
 
-    /* ====== 頂部標題條 ====== */
+    /* ====== 頂部標題條＋漢堡選單 ====== */
     .topbar{
       position:sticky; top:0; z-index:50;
       width:100%; background:var(--blue); color:#fff;
@@ -27,30 +41,84 @@
     }
     .topbar-inner{
       max-width:1200px; margin:0 auto;
-      display:flex; align-items:center; justify-content:center;
+      display:flex; align-items:center; justify-content:space-between;
       height:84px; padding:0 24px;
       transition:height .25s ease, padding .25s ease;
     }
     .title{
-      font-weight:800; font-size:28px; letter-spacing:2px;
+      font-weight:800; font-size:24px; letter-spacing:2px;
       transition:all .25s ease; white-space:nowrap;
     }
-    .topbar.shrink .topbar-inner{ height:54px; padding:0 16px; justify-content:flex-start; }
-    .topbar.shrink .title{ font-weight:700; font-size:18px; letter-spacing:1px; }
+    .topbar.shrink .topbar-inner{
+      height:54px; padding:0 16px;
+    }
+    .topbar.shrink .title{
+      font-weight:700; font-size:18px; letter-spacing:1px;
+    }
 
-    /* ====== 表格 ====== */
-    table{border-collapse:collapse; width:100%; margin-top:16px;}
-    th,td{border:1px solid var(--border); padding:8px; vertical-align:top;}
-    th{background:var(--blue-light); text-align:left;}
+    .hamburger{
+      width:40px; height:40px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.4);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      margin-right:12px;
+      background:rgba(255,255,255,.08);
+    }
+    .hamburger span{
+      display:block; width:18px; height:2px; background:#fff;
+      position:relative;
+    }
+    .hamburger span::before,
+    .hamburger span::after{
+      content:""; position:absolute; left:0; width:18px; height:2px; background:#fff;
+    }
+    .hamburger span::before{ top:-6px;}
+    .hamburger span::after{ top:6px;}
 
-    /* ====== 表單：對齊＆等高 ====== */
-    .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
-    .row>.field{ display:flex; flex-direction:column; min-width:180px; flex:1 1 220px; }
-    .field--actions{ align-self:flex-end; display:flex; gap:8px; }
+    .user-info{
+      font-size:13px; opacity:.9;
+    }
 
-    label{ font-size:12px; color:var(--muted); margin:2px 0 6px; }
+    /* ====== 漢堡選單下拉 ====== */
+    .menu-drawer{
+      max-width:1200px; margin:0 auto;
+      background:#fff;
+      color:var(--fg);
+      box-shadow:0 12px 24px rgba(15,23,42,.16);
+      border-radius:0 0 18px 18px;
+      padding:16px 24px 20px;
+      display:none;
+      grid-template-columns:1.1fr 1fr;
+      gap:24px;
+    }
+    .menu-drawer.open{ display:grid; }
 
-    /* 統一高度，select 與 input 對齊 */
+    .menu-section-title{
+      font-size:13px; font-weight:600; color:var(--muted); margin-bottom:6px;
+    }
+    .chip-list{
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .chip-link{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--chip);
+      font-size:12px;
+      text-decoration:none;
+      color:var(--fg);
+      cursor:pointer;
+    }
+    .chip-link:hover{
+      border-color:var(--blue); color:var(--blue); background:#e9f2ff;
+    }
+
+    /* ====== 公用按鈕 / 輸入 ====== */
+    input, select, button, textarea{
+      font-family:inherit;
+    }
     input, select, button{
       height:44px;
       padding:10px 12px;
@@ -59,190 +127,802 @@
       background:var(--chip);
       outline:none;
     }
-    input:focus, select:focus{ background:#fff; border-color:#94b7ff; box-shadow:0 0 0 3px rgba(25,118,210,.15); }
+    input:focus, select:focus, textarea:focus{
+      background:#fff; border-color:#94b7ff;
+      box-shadow:0 0 0 3px rgba(25,118,210,.15);
+    }
     select{ -webkit-appearance:none; -moz-appearance:none; appearance:none; line-height:1.2; }
 
-    .btn{ cursor:pointer; border-radius:12px; }
-    .btn-primary{ background:var(--blue); color:#fff; border-color:transparent; }
-    .btn-primary:hover{ filter:brightness(1.05); }
-    .btn-ghost{ background:#fff; border:1px solid var(--blue); color:var(--blue); }
+    .btn{
+      cursor:pointer; border-radius:12px;
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:4px; font-size:14px;
+    }
+    .btn-primary{
+      background:var(--blue); color:#fff; border-color:transparent;
+    }
+    .btn-primary:hover{ filter:brightness(1.06); }
+    .btn-ghost{
+      background:#fff; border:1px solid var(--blue); color:var(--blue);
+    }
     .btn-ghost:hover{ background:#f5f8ff; }
+    .btn-sm{
+      height:32px; padding:4px 10px; border-radius:999px; font-size:12px;
+    }
 
-    .form-help{ margin-top:6px; color:var(--muted); font-size:12px; }
+    /* ====== 首頁 Hero 區 ＋ 四個選項卡 ====== */
+    .hero{
+      display:flex; flex-direction:column; gap:18px;
+      margin-bottom:20px;
+    }
+    .hero-title{
+      font-size:28px; font-weight:800; letter-spacing:1px;
+      display:flex; align-items:flex-end; gap:10px;
+    }
+    .hero-sub{
+      font-size:14px; color:var(--muted);
+    }
+    .action-grid{
+      display:grid; grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:14px;
+    }
+    .action-card{
+      background:rgba(255,255,255,.82);
+      border-radius:18px;
+      padding:14px 14px 16px;
+      border:1px solid rgba(148,163,184,.4);
+      text-decoration:none;
+      color:var(--fg);
+      display:flex; flex-direction:column; justify-content:space-between;
+      box-shadow:0 4px 10px rgba(15,23,42,.08);
+      backdrop-filter:blur(10px);
+      transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+    .action-card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 10px 24px rgba(15,23,42,.12);
+      border-color:var(--blue);
+    }
+    .action-card-title{
+      font-weight:700; margin-bottom:4px;
+    }
+    .action-card-desc{
+      font-size:12px; color:var(--muted); margin-bottom:8px;
+    }
+    .pill{
+      font-size:11px;
+      border-radius:999px;
+      padding:3px 8px;
+      background:#e5edff;
+      color:var(--blue);
+      display:inline-flex; align-items:center; gap:4px;
+      align-self:flex-start;
+    }
 
+    /* ====== 中段：留言 / 行事曆 ====== */
+    .middle-grid{
+      display:grid; grid-template-columns:2fr 1.3fr;
+      gap:20px; margin-top:16px; margin-bottom:26px;
+    }
+    .panel{
+      background:rgba(255,255,255,.9);
+      border-radius:20px;
+      padding:16px 18px 18px;
+      border:1px solid rgba(148,163,184,.35);
+      box-shadow:0 4px 12px rgba(15,23,42,.08);
+      backdrop-filter:blur(6px);
+    }
+    .panel-header{
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:10px;
+    }
+    .panel-title{
+      font-size:15px; font-weight:700;
+    }
+    .panel-sub{ font-size:12px; color:var(--muted); }
+
+    /* 留言區 */
+    .note-input-row{
+      display:flex; gap:8px; margin-bottom:12px;
+    }
+    .note-input-row input{
+      flex:1;
+    }
+    .note-list{
+      list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;
+      max-height:200px; overflow:auto;
+    }
+    .note-item{
+      display:flex; align-items:center; gap:8px;
+      font-size:13px; padding:6px 8px;
+      border-radius:10px;
+      background:#f9fafb;
+    }
+    .note-text{ flex:1; }
+    .note-time{ font-size:11px; color:var(--muted); }
     form.inline{ display:inline; }
 
+    /* 行事曆 */
+    .calendar-header{
+      display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;
+    }
+    .calendar-title{
+      font-size:14px; font-weight:600;
+    }
+    .calendar-grid{
+      display:grid; grid-template-columns:repeat(7,1fr);
+      gap:4px; font-size:11px; margin-top:4px;
+    }
+    .calendar-cell{
+      text-align:center; padding:6px 0;
+      border-radius:8px;
+    }
+    .cal-weekday{ font-weight:600; color:var(--muted); }
+    .cal-day{
+      background:#f9fafb;
+    }
+    .cal-day.today{
+      background:#e0ecff;
+      font-weight:700;
+      color:var(--blue);
+    }
+
+    /* ====== 區塊標題 ====== */
+    .section{
+      margin-top:28px;
+      background:rgba(255,255,255,.9);
+      border-radius:22px;
+      padding:18px 20px 22px;
+      border:1px solid rgba(148,163,184,.35);
+      box-shadow:0 4px 12px rgba(15,23,42,.08);
+      backdrop-filter:blur(8px);
+    }
+    .section-header{
+      display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;
+    }
+    .section-title{
+      font-size:18px; font-weight:700;
+    }
+    .section-sub{ font-size:12px; color:var(--muted); }
+
+    /* ====== 表單：新增／查詢區 ====== */
+    .row{
+      display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;
+    }
+    .row>.field{
+      display:flex; flex-direction:column; min-width:180px; flex:1 1 220px;
+    }
+    .field--actions{ align-self:flex-end; display:flex; gap:8px; flex-wrap:wrap; }
+
+    label{ font-size:12px; color:var(--muted); margin:2px 0 6px; }
+    .form-help{ margin-top:6px; color:var(--muted); font-size:12px; }
+
+    .ai-input-wrap{
+      display:flex; gap:6px; align-items:center;
+    }
+    .ai-input-wrap input{ flex:1; }
+    .btn-ai{
+      white-space:nowrap;
+    }
+
+    /* ====== 物料清單表格 ====== */
+    table{border-collapse:collapse; width:100%; margin-top:10px;}
+    th,td{border:1px solid var(--border); padding:8px; vertical-align:top; font-size:13px;}
+    th{background:var(--blue-light); text-align:left;}
+
+    .badge{
+      display:inline-flex; align-items:center; justify-content:center;
+      border-radius:999px;
+      padding:2px 8px;
+      font-size:11px;
+      margin-top:2px;
+    }
+    .badge-low{ background:#fee2e2; color:var(--danger); }
+    .badge-exp7{ background:#fef3c7; color:var(--warn); }
+    .badge-exp14{ background:#fffbeb; color:#92400e; }
+
+    tr.low-stock-row{
+      background:#fff7f7;
+    }
+
+    /* ====== 數量修改小視窗 ====== */
+    .modal-backdrop{
+      position:fixed; inset:0;
+      background:rgba(15,23,42,.45);
+      display:none; align-items:center; justify-content:center;
+      z-index:80;
+    }
+    .modal-backdrop.show{ display:flex; }
+    .modal{
+      background:#fff;
+      border-radius:18px;
+      padding:18px 18px 16px;
+      width:260px;
+      box-shadow:0 20px 40px rgba(15,23,42,.4);
+    }
+    .modal h3{
+      margin:0 0 8px; font-size:16px;
+    }
+    .modal p{ margin:0 0 10px; font-size:13px; color:var(--muted); }
+    .modal input{
+      width:100%; margin-bottom:12px;
+    }
+    .modal-actions{
+      display:flex; justify-content:flex-end; gap:8px;
+    }
+
+    /* ====== 新增成功 Toast ====== */
+    .toast{
+      position:fixed;
+      top:90px; left:50%; transform:translateX(-50%);
+      background:#16a34a;
+      color:#fff; padding:10px 16px;
+      border-radius:999px;
+      font-size:13px;
+      box-shadow:0 8px 20px rgba(22,163,74,.5);
+      z-index:90;
+      opacity:0; pointer-events:none;
+      animation:toast-in 2.2s ease forwards;
+    }
+    @keyframes toast-in{
+      0%{opacity:0; transform:translate(-50%,-10px);}
+      10%,80%{opacity:1; transform:translate(-50%,0);}
+      100%{opacity:0; transform:translate(-50%,-6px);}
+    }
+
+    @media (max-width:900px){
+      .action-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .middle-grid{ grid-template-columns:1fr; }
+    }
     @media (max-width:640px){
-      .row>.field{ min-width:48%; }
       main{ padding:16px; margin-top:72px; }
       .topbar-inner{ height:72px; }
+      .hero-title{ font-size:22px; flex-direction:column; align-items:flex-start; }
+      .row>.field{ min-width:48%; }
+      table{ font-size:12px; }
+      th,td{ padding:6px; }
     }
   </style>
 </head>
 <body>
-  <!-- 頂部藍條＋標題（置中；滾動後變細靠左） -->
+  <!-- ====== 頂部藍條＋標題＋三條線 ====== -->
   <header class="topbar" id="topbar">
     <div class="topbar-inner">
-      <div class="title">家庭物料管理</div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="hamburger" id="btnMenu">
+          <span></span>
+        </div>
+        <div class="title">家庭物料管理系統</div>
+      </div>
+      <div class="user-info">
+        <!-- 登入後可顯示使用者名稱 -->
+        <span th:text="${#authentication?.name}" th:if="${#authorization?.expression('isAuthenticated()')}">已登入使用者</span>
+        <a th:href="@{/login}" style="color:#e5e7eb; text-decoration:none; font-size:13px;"
+           th:if="${#authorization == null or !#authorization.expression('isAuthenticated()')}">登入</a>
+      </div>
+    </div>
+
+    <!-- ====== 漢堡選單下拉：地點 / 類別 ====== -->
+    <div class="menu-drawer" id="menuDrawer">
+      <div>
+        <div class="menu-section-title">依地點瀏覽</div>
+        <div class="chip-list">
+          <a class="chip-link" th:each="loc : ${locations}"
+             th:href="@{/items/location(name=${loc})}"
+             th:text="${loc}">客廳</a>
+        </div>
+      </div>
+      <div>
+        <div class="menu-section-title">依物品類別瀏覽</div>
+        <div class="chip-list">
+          <a class="chip-link" th:each="cat : ${categories}"
+             th:href="@{/items/category(name=${cat})}"
+             th:text="${cat}">食材</a>
+        </div>
+      </div>
     </div>
   </header>
 
+  <!-- ====== 新增成功訊息（有帶 successMessage 時顯示） ====== -->
+  <div class="toast" th:if="${successMessage}" th:text="${successMessage}">
+    新增成功！
+  </div>
+
   <main>
-    <h2 style="margin:0 0 12px">新增／查詢</h2>
+    <!-- ====== Hero ＋ 4 個主選項 ====== -->
+    <section class="hero">
+      <div class="hero-title">
+        <span>歡迎回來，開始整理你的家庭物資吧。</span>
+      </div>
+      <p class="hero-sub">
+        登入後首頁提供新增、查詢、即將過期與數量不足的快速入口；左上角三條線可依地點或物品類別快速跳轉。
+      </p>
 
-    <!-- 同一組欄位；「新增」走 POST /items、「查詢」走 GET /items/search -->
-    <form th:object="${item}" id="createSearchForm" method="post" th:action="@{/items}">
-      <div class="row">
-        <div class="field">
-          <label>名稱（查詢時必填）</label>
-          <input th:field="*{name}" id="nameField" placeholder="螺絲 M3"/>
+      <div class="action-grid">
+        <a href="#section-create" class="action-card">
+          <div>
+            <div class="action-card-title">新增物品</div>
+            <div class="action-card-desc">輸入名稱、房間、地點、數量與有效期限，快速建立庫存。</div>
+          </div>
+          <span class="pill">前往新增區塊</span>
+        </a>
+        <a href="#section-create" class="action-card">
+          <div>
+            <div class="action-card-title">查詢物品</div>
+            <div class="action-card-desc">可依名稱、SKU、房間、地點或類別查詢目前的存量。</div>
+          </div>
+          <span class="pill">支援房間查詢</span>
+        </a>
+        <a href="#section-expire" class="action-card">
+          <div>
+            <div class="action-card-title">過期查詢</div>
+            <div class="action-card-desc">查看已過期與 7 / 14 天內即將到期的物品。</div>
+          </div>
+          <span class="pill">到期提醒</span>
+        </a>
+        <a href="#section-low" class="action-card">
+          <div>
+            <div class="action-card-title">數量不足</div>
+            <div class="action-card-desc">檢視庫存過少的物品，避免臨時缺貨。</div>
+          </div>
+          <span class="pill">低庫存提醒</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ====== 中段：留言 / 行事曆 ====== -->
+    <section class="middle-grid">
+      <!-- 留言 / 交代事項 -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">留言 / 交代事項</div>
+            <div class="panel-sub">首頁僅顯示未完成事項，完成可勾選。總攬頁面會顯示全部（含已完成）。</div>
+          </div>
+          <a class="btn btn-ghost btn-sm" th:href="@{/notes}">查看全部事項總攬</a>
         </div>
 
-        <div class="field">
-          <label>SKU</label>
-          <input th:field="*{sku}" placeholder="唯一代碼（選填）"/>
-        </div>
+        <form th:action="@{/notes}" method="post" class="note-input-row">
+          <input name="text" placeholder="輸入要交代的事情，例如：週五前確認冰箱雞蛋數量" required />
+          <button type="submit" class="btn btn-primary">新增</button>
+        </form>
 
-        <div class="field">
-          <label>單位</label>
-          <input th:field="*{unit}" placeholder="pcs/box/kg（選填）"/>
-        </div>
+        <ul class="note-list">
+          <li class="note-item" th:each="note : ${openNotes}">
+            <form class="inline" th:action="@{|/notes/${note.id}/toggle|}" method="post">
+              <input type="checkbox" onchange="this.form.submit()" />
+            </form>
+            <div class="note-text" th:text="${note.text}">把客廳零食區重新整理</div>
+            <div class="note-time" th:text="${#temporals.format(note.createdAt,'MM/dd HH:mm')}">11/17 21:05</div>
+          </li>
+        </ul>
+      </div>
 
-        <div class="field" style="max-width:220px">
-          <label>數量（新增用）</label>
-          <input type="number" th:field="*{quantity}" min="0" value="0"/>
+      <!-- 行事曆 -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">家庭行事曆</div>
         </div>
-
-        <div class="field">
-          <label>儲位</label>
-          <select id="locationSelect-create">
-            <option value="" selected>選擇地點（選填或新增時必填）</option>
-            <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}">A1-3</option>
-            <option value="__NEW__">＋新增地點…</option>
-          </select>
-          <input id="locationInput-create" type="text" placeholder="輸入新地點" style="display:none;"/>
-          <input type="hidden" th:field="*{location}" id="locationField-create"/>
+        <div class="calendar-header">
+          <button type="button" class="btn btn-ghost btn-sm" id="calPrev">&lt;</button>
+          <div class="calendar-title" id="calTitle">2025 / 11</div>
+          <button type="button" class="btn btn-ghost btn-sm" id="calNext">&gt;</button>
         </div>
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- JS 產生 -->
+        </div>
+      </div>
+    </section>
 
-        <!-- 動作按鈕：同一排、底線對齊 -->
-        <div class="field--actions">
-          <button type="submit" class="btn btn-primary" id="btnCreate">新增</button>
-          <button class="btn btn-ghost" id="btnSearch" formaction="/items/search" formmethod="get">查詢</button>
+    <!-- ====== 新增／查詢 區（同一個表單） ====== -->
+    <section class="section" id="section-create">
+      <div class="section-header">
+        <div>
+          <div class="section-title">新增 / 查詢物品</div>
+          <div class="section-sub">查詢時以「名稱」為必填，其餘選填；新增時請填寫儲位與數量，過期日期可選填。</div>
         </div>
       </div>
 
-      <!-- 小字移到整列下方，避免撐高欄位 -->
-      <div class="form-help">
-        沒有地點可選時，先選「＋新增地點…」並輸入；查詢時僅「名稱」必填，其餘選填。
-      </div>
-    </form>
+      <form th:object="${item}" id="createSearchForm" method="post" th:action="@{/items}">
+        <div class="row">
+          <!-- 名稱 + AI 幫忙 -->
+          <div class="field">
+            <label>名稱（查詢時必填）</label>
+            <div class="ai-input-wrap">
+              <input th:field="*{name}" id="nameField" placeholder="螺絲 M3 / 牛奶 / 洗衣精"/>
+              <button type="button" class="btn btn-ghost btn-sm btn-ai" id="btnAiSuggest">AI 填寫</button>
+            </div>
+          </div>
 
-    <h2 style="margin:24px 0 8px">物料清單</h2>
-    <table>
-      <thead>
+          <div class="field">
+            <label>SKU</label>
+            <input th:field="*{sku}" placeholder="唯一代碼（選填）"/>
+          </div>
+
+          <div class="field">
+            <label>物品類別</label>
+            <select th:field="*{category}">
+              <option value="">選擇類別（選填）</option>
+              <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}">食材</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>房間</label>
+            <select th:field="*{room}">
+              <option value="">選擇房間（查詢可用）</option>
+              <option th:each="room : ${rooms}" th:value="${room}" th:text="${room}">客廳</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>單位</label>
+            <input th:field="*{unit}" placeholder="pcs/box/kg（選填）"/>
+          </div>
+
+          <div class="field" style="max-width:220px">
+            <label>數量（新增用）</label>
+            <input type="number" th:field="*{quantity}" min="0" value="0"/>
+          </div>
+
+          <div class="field">
+            <label>儲位</label>
+            <select id="locationSelect-create">
+              <option value="" selected>選擇地點（選填或新增時必填）</option>
+              <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}">A1-3</option>
+              <option value="__NEW__">＋新增地點…</option>
+            </select>
+            <input id="locationInput-create" type="text" placeholder="輸入新地點" style="display:none;"/>
+            <input type="hidden" th:field="*{location}" id="locationField-create"/>
+          </div>
+
+          <div class="field">
+            <label>有效期限（選填）</label>
+            <input type="date" th:field="*{expireDate}"/>
+          </div>
+
+          <div class="field--actions">
+            <button type="submit" class="btn btn-primary" id="btnCreate">新增</button>
+            <button class="btn btn-ghost" id="btnSearch" formaction="/items/search" formmethod="get">查詢</button>
+          </div>
+        </div>
+
+        <div class="form-help">
+          新增時請選擇或輸入儲位；查詢時僅「名稱」必填，其餘欄位可協助縮小範圍。
+        </div>
+      </form>
+    </section>
+
+    <!-- ====== 物料清單 ====== -->
+    <section class="section" id="section-list">
+      <div class="section-header">
+        <div>
+          <div class="section-title">物料清單</div>
+          <div class="section-sub">此清單顯示目前條件下的物品；每一列支援 +1 / -1、刪除與大量修改數量。</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
         <tr>
-          <th>ID</th><th>名稱</th><th>SKU</th><th>單位</th><th>數量</th><th>儲位</th><th>操作</th>
+          <th>ID</th>
+          <th>名稱 / 類別</th>
+          <th>SKU</th>
+          <th>房間 / 儲位</th>
+          <th>單位 / 數量</th>
+          <th>有效期限</th>
+          <th>操作</th>
         </tr>
-      </thead>
-      <tbody>
-        <tr th:each="it : ${items}">
+        </thead>
+        <tbody>
+        <tr th:each="it : ${items}"
+            th:classappend="${it.lowStock} ? 'low-stock-row'">
           <td th:text="${it.id}">1</td>
-          <td th:text="${it.name}">螺絲</td>
-          <td th:text="${it.sku}">SCREW-M3</td>
-          <td th:text="${it.unit}">pcs</td>
-          <td th:text="${it.quantity}">100</td>
 
           <td>
-            <div><strong th:text="${it.location}">A1-3</strong></div>
-            <form class="inline" th:action="@{|/items/${it.id}/move|}" method="post" onsubmit="return beforeMoveSubmit(this)">
-              <select class="locSelect">
-                <option value="" selected>選擇新地點</option>
-                <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}">A1-3</option>
-                <option value="__NEW__">＋新增地點…</option>
-              </select>
-              <input class="locInput" type="text" placeholder="輸入新地點" style="display:none;" />
-              <input type="hidden" name="location" class="locHidden" />
-              <button type="submit" class="btn btn-ghost">移動</button>
-            </form>
+            <div th:text="${it.name}">螺絲</div>
+            <div style="font-size:11px; color:var(--muted);" th:text="${it.category}">五金</div>
+          </td>
+
+          <td th:text="${it.sku}">SCREW-M3</td>
+
+          <td>
+            <div style="font-size:11px; color:var(--muted);">
+              房間：<span th:text="${it.room}">客廳</span>
+            </div>
+            <div>儲位：<strong th:text="${it.location}">A1-3</strong></div>
           </td>
 
           <td>
+            <div><span th:text="${it.unit}">pcs</span> × <span th:text="${it.quantity}">100</span></div>
+            <div th:if="${it.lowStock}" class="badge badge-low">數量不足</div>
+          </td>
+
+          <td>
+            <div th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}" >2025/12/31</div>
+            <div th:if="${it.daysToExpire != null}">
+              <span class="badge badge-exp7" th:if="${it.daysToExpire &lt;= 7 && it.daysToExpire &gt;= 0}">7 天內到期</span>
+              <span class="badge badge-exp14" th:if="${it.daysToExpire &lt;= 14 && it.daysToExpire &gt; 7}">14 天內到期</span>
+            </div>
+          </td>
+
+          <td>
+            <!-- 小量調整 -->
             <form class="inline" th:action="@{|/items/${it.id}/adjust|}" method="post">
-              <input type="hidden" name="delta" value="1"><button type="submit" class="btn btn-ghost">+1</button>
+              <input type="hidden" name="delta" value="1">
+              <button type="submit" class="btn btn-ghost btn-sm">+1</button>
             </form>
             <form class="inline" th:action="@{|/items/${it.id}/adjust|}" method="post">
-              <input type="hidden" name="delta" value="-1"><button type="submit" class="btn btn-ghost">-1</button>
+              <input type="hidden" name="delta" value="-1">
+              <button type="submit" class="btn btn-ghost btn-sm">-1</button>
             </form>
-            <form class="inline" th:action="@{|/items/${it.id}/delete|}" method="post" onsubmit="return confirm('確定刪除？')">
-              <button type="submit" class="btn btn-ghost">刪除</button>
+
+            <!-- 大量修改：小視窗 -->
+            <button type="button"
+                    class="btn btn-ghost btn-sm btn-editQty"
+                    th:attr="data-id=${it.id},data-current=${it.quantity}">
+              更改數量
+            </button>
+
+            <!-- 刪除 -->
+            <form class="inline" th:action="@{|/items/${it.id}/delete|}" method="post"
+                  onsubmit="return confirm('確定刪除？')">
+              <button type="submit" class="btn btn-ghost btn-sm">刪除</button>
             </form>
           </td>
         </tr>
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ====== 過期查詢 區（示意：之後你可用專門的 itemsExpiring 列表） ====== -->
+    <section class="section" id="section-expire">
+      <div class="section-header">
+        <div>
+          <div class="section-title">過期 / 即將到期物品</div>
+          <div class="section-sub">此處建議顯示已過期、7 / 14 天內即將到期的清單（後端可再提供專門資料）。</div>
+        </div>
+      </div>
+      <p style="font-size:13px; color:var(--muted); margin:0;">
+        目前先共用上面的物料清單標示，之後你可以把到期項目另外丟到 <code>expiringItems</code> 再做一個表格。
+      </p>
+    </section>
+
+    <!-- ====== 數量不足 區 ====== -->
+    <section class="section" id="section-low">
+      <div class="section-header">
+        <div>
+          <div class="section-title">數量不足清單</div>
+          <div class="section-sub">建議顯示 lowStock / 數量低於安全值的物品，方便補貨。</div>
+        </div>
+      </div>
+      <p style="font-size:13px; color:var(--muted); margin:0;">
+        目前 lowStock 會在上方表格以紅色底和「數量不足」標籤標示，之後也可改為只列出 lowStockItems。
+      </p>
+    </section>
   </main>
 
+  <!-- ====== 數量修改小視窗 ====== -->
+  <div class="modal-backdrop" id="qtyModalBg">
+    <div class="modal">
+      <h3>更改數量</h3>
+      <p>請輸入新的數量，按「確認」後才會送出變更。</p>
+      <input type="number" id="qtyInput" min="0" />
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="qtyCancel">取消</button>
+        <button type="button" class="btn btn-primary btn-sm" id="qtyOk">確認</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    /* ====== 頂部縮小＆左對齊 ====== */
+    /* ====== 頂部縮小 ====== */
     const topbar = document.getElementById('topbar');
     const shrinkAt = 20;
-    const onScroll = () => { if (window.scrollY > shrinkAt) topbar.classList.add('shrink'); else topbar.classList.remove('shrink'); };
-    document.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+    const onScroll = () => {
+      if (window.scrollY > shrinkAt) topbar.classList.add('shrink');
+      else topbar.classList.remove('shrink');
+    };
+    document.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
 
-    /* ====== 儲位：下拉／自訂 ====== */
+    /* ====== 漢堡選單開關 ====== */
+    const btnMenu = document.getElementById('btnMenu');
+    const menuDrawer = document.getElementById('menuDrawer');
+    btnMenu.addEventListener('click', () => {
+      menuDrawer.classList.toggle('open');
+    });
+    document.addEventListener('click',(e)=>{
+      if(!menuDrawer.contains(e.target) && !btnMenu.contains(e.target)){
+        menuDrawer.classList.remove('open');
+      }
+    });
+
+    /* ====== 儲位下拉／自訂 ====== */
     const selCreate = document.getElementById('locationSelect-create');
     const inputCreate = document.getElementById('locationInput-create');
     const fieldCreate = document.getElementById('locationField-create');
     function syncCreateLocation(){
+      if (!selCreate) return;
       const v = selCreate.value;
-      if (v === '__NEW__'){ inputCreate.style.display=''; fieldCreate.value = inputCreate.value.trim(); }
-      else{ inputCreate.style.display='none'; fieldCreate.value = v || ''; }
+      if (v === '__NEW__'){
+        inputCreate.style.display='';
+        fieldCreate.value = inputCreate.value.trim();
+      } else {
+        inputCreate.style.display='none';
+        fieldCreate.value = v || '';
+      }
     }
-    selCreate.addEventListener('change', syncCreateLocation);
-    inputCreate.addEventListener('input', () => { if (selCreate.value==='__NEW__') fieldCreate.value = inputCreate.value.trim(); });
+    if (selCreate){
+      selCreate.addEventListener('change', syncCreateLocation);
+      inputCreate.addEventListener('input', () => {
+        if (selCreate.value==='__NEW__') fieldCreate.value = inputCreate.value.trim();
+      });
+    }
 
-    /* ====== 新增／查詢：驗證條件 ====== */
+    /* ====== 新增／查詢 驗證 ====== */
     const formCS = document.getElementById('createSearchForm');
     const nameField = document.getElementById('nameField');
-    const btnCreate = document.getElementById('btnCreate');
-    const btnSearch = document.getElementById('btnSearch');
+    const btnCreateEl = document.getElementById('btnCreate');
+    const btnSearchEl = document.getElementById('btnSearch');
 
-    btnCreate.addEventListener('click', (e)=>{
-      syncCreateLocation();
-      if (!fieldCreate.value){ e.preventDefault(); alert('新增時請選擇或輸入儲位'); return; }
-      formCS.method = 'post'; // 由 th:action=/items
-    });
-
-    btnSearch.addEventListener('click', (e)=>{
-      if (!nameField.value.trim()){ e.preventDefault(); alert('請輸入名稱再查詢'); return; }
-      // 查詢時將空欄位暫時停用，避免送空參數
-      Array.from(formCS.elements).forEach(el=>{
-        if(['INPUT','SELECT'].includes(el.tagName) && !el.value) el.name && (el.disabled = true);
+    if (btnCreateEl){
+      btnCreateEl.addEventListener('click', (e)=>{
+        syncCreateLocation();
+        if (!fieldCreate.value){
+          e.preventDefault();
+          alert('新增時請選擇或輸入儲位');
+          return;
+        }
+        formCS.method = 'post'; // 由 th:action=/items
       });
+    }
+
+    if (btnSearchEl){
+      btnSearchEl.addEventListener('click', (e)=>{
+        if (!nameField.value.trim()){
+          e.preventDefault();
+          alert('請輸入名稱再查詢');
+          return;
+        }
+        Array.from(formCS.elements).forEach(el=>{
+          if(['INPUT','SELECT'].includes(el.tagName) && !el.value){
+            if(el.name) el.disabled = true;
+          }
+        });
+      });
+    }
+
+    /* ====== AI 填寫物品名稱（目前先做示意） ====== */
+    const btnAiSuggest = document.getElementById('btnAiSuggest');
+    if (btnAiSuggest && nameField){
+      btnAiSuggest.addEventListener('click', ()=>{
+        alert('目前尚未串接 AI，之後可在這裡呼叫後端服務自動建議名稱。');
+        nameField.focus();
+      });
+    }
+
+    /* ====== 行事曆簡易渲染 ====== */
+    const calTitle = document.getElementById('calTitle');
+    const calGrid = document.getElementById('calendarGrid');
+    const calPrev = document.getElementById('calPrev');
+    const calNext = document.getElementById('calNext');
+
+    let calYear, calMonth; // month: 0-11
+    const today = new Date();
+
+    function renderCalendar(){
+      const firstDay = new Date(calYear, calMonth, 1);
+      const firstWeekday = firstDay.getDay(); // 0 Sun
+      const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+      calTitle.textContent = calYear + ' / ' + (calMonth+1).toString().padStart(2,'0');
+      calGrid.innerHTML = '';
+
+      const weekdays = ['日','一','二','三','四','五','六'];
+      weekdays.forEach(w=>{
+        const cell = document.createElement('div');
+        cell.className = 'calendar-cell cal-weekday';
+        cell.textContent = w;
+        calGrid.appendChild(cell);
+      });
+
+      for(let i=0;i<firstWeekday;i++){
+        const cell = document.createElement('div');
+        cell.className = 'calendar-cell';
+        calGrid.appendChild(cell);
+      }
+
+      for(let d=1; d<=daysInMonth; d++){
+        const cell = document.createElement('div');
+        cell.className = 'calendar-cell cal-day';
+        const isToday = (calYear === today.getFullYear() &&
+                         calMonth === today.getMonth() &&
+                         d === today.getDate());
+        if (isToday) cell.classList.add('today');
+        cell.textContent = d;
+        calGrid.appendChild(cell);
+      }
+    }
+
+    if (calTitle && calGrid){
+      calYear = today.getFullYear();
+      calMonth = today.getMonth();
+      renderCalendar();
+      calPrev.addEventListener('click', ()=>{
+        calMonth--;
+        if (calMonth<0){ calMonth=11; calYear--; }
+        renderCalendar();
+      });
+      calNext.addEventListener('click', ()=>{
+        calMonth++;
+        if (calMonth>11){ calMonth=0; calYear++; }
+        renderCalendar();
+      });
+    }
+
+    /* ====== 更改大數量：小視窗 ====== */
+    const qtyModalBg = document.getElementById('qtyModalBg');
+    const qtyInput = document.getElementById('qtyInput');
+    const qtyCancel = document.getElementById('qtyCancel');
+    const qtyOk = document.getElementById('qtyOk');
+    let editingItemId = null;
+
+    function openQtyModal(id, current){
+      editingItemId = id;
+      qtyInput.value = current;
+      qtyModalBg.classList.add('show');
+      qtyInput.focus();
+      qtyInput.select();
+    }
+    function closeQtyModal(){
+      qtyModalBg.classList.remove('show');
+      editingItemId = null;
+    }
+
+    document.addEventListener('click',(e)=>{
+      const btn = e.target.closest('.btn-editQty');
+      if(btn){
+        const id = btn.getAttribute('data-id');
+        const current = btn.getAttribute('data-current') || '0';
+        openQtyModal(id, current);
+      }
     });
 
-    /* ====== 列表中移動儲位 ====== */
-    function beforeMoveSubmit(form){
-      const sel=form.querySelector('.locSelect');
-      const inp=form.querySelector('.locInput');
-      const hid=form.querySelector('.locHidden');
-      if (sel.value==='__NEW__'){
-        if(!inp.value.trim()){ alert('請輸入新地點'); return false; }
-        hid.value=inp.value.trim();
-      }else{
-        if(!sel.value){ alert('請選擇地點'); return false; }
-        hid.value=sel.value;
-      }
-      return true;
+    if (qtyCancel){
+      qtyCancel.addEventListener('click', closeQtyModal);
     }
-    document.addEventListener('change', (e)=>{
-      if(e.target && e.target.classList.contains('locSelect')){
-        const sel=e.target, form=sel.closest('form'), inp=form.querySelector('.locInput');
-        if(sel.value==='__NEW__'){ inp.style.display=''; inp.focus(); }
-        else{ inp.style.display='none'; inp.value=''; }
-      }
+    if (qtyModalBg){
+      qtyModalBg.addEventListener('click',(e)=>{
+        if(e.target === qtyModalBg) closeQtyModal();
+      });
+    }
+    if (qtyOk){
+      qtyOk.addEventListener('click', ()=>{
+        const v = parseInt(qtyInput.value,10);
+        if(isNaN(v) || v<0){
+          alert('請輸入大於等於 0 的數字');
+          return;
+        }
+        if(!editingItemId){
+          closeQtyModal();
+          return;
+        }
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = '/items/' + encodeURIComponent(editingItemId) + '/setQuantity'; // 之後在後端實作
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'quantity';
+        input.value = v;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+      });
+    }
+
+    document.addEventListener('keydown',(e)=>{
+      if(e.key === 'Escape') closeQtyModal();
     });
-    window.beforeMoveSubmit = beforeMoveSubmit;
   </script>
 </body>
 </html>
