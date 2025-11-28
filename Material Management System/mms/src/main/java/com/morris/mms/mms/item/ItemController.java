@@ -61,7 +61,7 @@ public class ItemController {
         repo.save(it);
 
         // 若不想每次 +1 / -1 都跳訊息，可以拿掉這段（看你喜好）
-        redirectAttributes.addFlashAttribute("successMessage", "已更新物品 ID " + id + " 的數量");
+        //redirectAttributes.addFlashAttribute("successMessage", "已更新物品 ID " + id + " 的數量");
         return "redirect:/items";
     }
 }
