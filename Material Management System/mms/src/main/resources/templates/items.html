@@ -438,11 +438,32 @@
         <div class="title">家庭物料管理系統</div>
       </div>
       <div class="user-info">
-        <!-- 登入後可顯示使用者名稱 -->
-        <span th:text="${#authentication?.name}" th:if="${#authorization?.expression('isAuthenticated()')}">已登入使用者</span>
-        <a th:href="@{/login}" style="color:#e5e7eb; text-decoration:none; font-size:13px;"
-           th:if="${#authorization == null or !#authorization.expression('isAuthenticated()')}">登入</a>
+        <!-- 已登入：顯示使用者名稱 + 登出按鈕 -->
+        <span th:if="${session.loginUser != null}">
+          歡迎，
+          <span th:text="${session.loginUser.displayName != null} ? ${session.loginUser.displayName} : ${session.loginUser.username}">
+            使用者
+          </span>
+        </span>
+
+        <form th:if="${session.loginUser != null}"
+              th:action="@{/logout}" method="post"
+              style="display:inline; margin-left:8px;">
+          <button type="submit"
+                  style="background:transparent;border:1px solid #e5e7eb;color:#e5e7eb;
+                        border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer;">
+            登出
+          </button>
+        </form>
+
+        <!-- 未登入：顯示登入連結 -->
+        <a th:if="${session.loginUser == null}"
+          th:href="@{/login}"
+          style="color:#e5e7eb; text-decoration:none; font-size:13px;">
+          登入
+        </a>
       </div>
+
     </div>
 
     <!-- ====== 漢堡選單下拉：地點 / 類別 ====== -->
