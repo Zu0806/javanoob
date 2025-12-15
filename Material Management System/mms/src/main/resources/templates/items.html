@@ -740,31 +740,93 @@
       </table>
     </section>
 
-    <!-- ====== 過期查詢 區（示意：之後你可用專門的 itemsExpiring 列表） ====== -->
     <section class="section" id="section-expire">
-      <div class="section-header">
-        <div>
-          <div class="section-title">過期 / 即將到期物品</div>
-          <div class="section-sub">此處建議顯示已過期、7 / 14 天內即將到期的清單（後端可再提供專門資料）。</div>
-        </div>
-      </div>
-      <p style="font-size:13px; color:var(--muted); margin:0;">
-        目前先共用上面的物料清單標示，之後你可以把到期項目另外丟到 <code>expiringItems</code> 再做一個表格。
-      </p>
-    </section>
+  <div class="section-header">
+    <div>
+      <div class="section-title">過期 / 即將到期物品</div>
+      <div class="section-sub">分成「已過期」、「7 天內到期」、「14 天內到期」，方便你快速處理。</div>
+    </div>
+  </div>
 
-    <!-- ====== 數量不足 區 ====== -->
-    <section class="section" id="section-low">
-      <div class="section-header">
-        <div>
-          <div class="section-title">數量不足清單</div>
-          <div class="section-sub">建議顯示 lowStock / 數量低於安全值的物品，方便補貨。</div>
-        </div>
-      </div>
-      <p style="font-size:13px; color:var(--muted); margin:0;">
-        目前 lowStock 會在上方表格以紅色底和「數量不足」標籤標示，之後也可改為只列出 lowStockItems。
-      </p>
-    </section>
+  <!-- 已過期 -->
+  <div style="font-weight:700; color:#123763; margin:6px 0 6px;">已過期</div>
+  <table th:if="${#lists.size(expiredItems) > 0}">
+    <thead>
+    <tr>
+      <th>ID</th><th>名稱</th><th>類別</th><th>房間/儲位</th><th>數量</th><th>到期日</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="it : ${expiredItems}">
+      <td th:text="${it.id}">1</td>
+      <td th:text="${it.name}">牛奶</td>
+      <td th:text="${it.category}">食材</td>
+      <td>房間：<span th:text="${it.room}"></span> ／ 儲位：<strong th:text="${it.location}"></strong></td>
+      <td><span th:text="${it.unit}"></span> × <span th:text="${it.quantity}"></span></td>
+      <td>
+        <div th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}"></div>
+        <span class="badge badge-low">已過期</span>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <p th:if="${#lists.size(expiredItems) == 0}" style="font-size:13px;color:var(--muted);margin:0 0 12px;">
+    目前沒有已過期物品 ✅
+  </p>
+
+  <!-- 7 天內 -->
+  <div style="font-weight:700; color:#123763; margin:10px 0 6px;">7 天內到期</div>
+  <table th:if="${#lists.size(exp7Items) > 0}">
+    <thead>
+    <tr>
+      <th>ID</th><th>名稱</th><th>房間/儲位</th><th>數量</th><th>到期日</th><th>剩餘</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="it : ${exp7Items}">
+      <td th:text="${it.id}">1</td>
+      <td>
+        <div th:text="${it.name}"></div>
+        <div style="font-size:11px; color:var(--muted);" th:text="${it.category}"></div>
+      </td>
+      <td>房間：<span th:text="${it.room}"></span> ／ 儲位：<strong th:text="${it.location}"></strong></td>
+      <td><span th:text="${it.unit}"></span> × <span th:text="${it.quantity}"></span></td>
+      <td th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}"></td>
+      <td><span class="badge badge-exp7" th:text="${it.daysToExpire} + ' 天'">3 天</span></td>
+    </tr>
+    </tbody>
+  </table>
+  <p th:if="${#lists.size(exp7Items) == 0}" style="font-size:13px;color:var(--muted);margin:0 0 12px;">
+    目前沒有 7 天內到期物品 ✅
+  </p>
+
+  <!-- 14 天內 -->
+  <div style="font-weight:700; color:#123763; margin:10px 0 6px;">14 天內到期</div>
+  <table th:if="${#lists.size(exp14Items) > 0}">
+    <thead>
+    <tr>
+      <th>ID</th><th>名稱</th><th>房間/儲位</th><th>數量</th><th>到期日</th><th>剩餘</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="it : ${exp14Items}">
+      <td th:text="${it.id}">1</td>
+      <td>
+        <div th:text="${it.name}"></div>
+        <div style="font-size:11px; color:var(--muted);" th:text="${it.category}"></div>
+      </td>
+      <td>房間：<span th:text="${it.room}"></span> ／ 儲位：<strong th:text="${it.location}"></strong></td>
+      <td><span th:text="${it.unit}"></span> × <span th:text="${it.quantity}"></span></td>
+      <td th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}"></td>
+      <td><span class="badge badge-exp14" th:text="${it.daysToExpire} + ' 天'">10 天</span></td>
+    </tr>
+    </tbody>
+  </table>
+  <p th:if="${#lists.size(exp14Items) == 0}" style="font-size:13px;color:var(--muted);margin:0;">
+    目前沒有 14 天內到期物品 ✅
+  </p>
+</section>
+
   </main>
 
   <!-- ====== 數量修改小視窗 ====== -->
