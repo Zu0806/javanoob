@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant">
 <head>
@@ -7,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root{
-    --blue:#2f80ed;          /* 主藍色 */
-    --blue-dark:#1b4f9d;     /* 深藍 */
-    --blue-light:#e3f2ff;    /* 表頭淡藍 */
+    --blue:#2f80ed;
+    --blue-dark:#1b4f9d;
+    --blue-light:#e3f2ff;
     --border:#c8dcff;
     --fg:#1f2933;
     --muted:#6b7280;
-    --chip:#f4f7ff;          /* 輸入底色 */
+    --chip:#f4f7ff;
     --radius:16px;
     --danger:#ef4444;
     --warn:#f97316;
@@ -27,7 +26,6 @@
     font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
     color:var(--fg);
     margin:0;
-    /* 淺藍漸層背景 */
     background:
       radial-gradient(circle at 0 0,rgba(47,128,237,.18),transparent 55%),
       radial-gradient(circle at 100% 100%,rgba(37,99,235,.16),transparent 55%),
@@ -43,11 +41,10 @@
     margin-right:auto;
   }
 
-  /* ====== 頂部標題條＋漢堡選單（改成藍色漸層） ====== */
   .topbar{
     position:sticky; top:0; z-index:50;
     width:100%;
-  background:linear-gradient(90deg,#0d254f 0%, #1c64d7 100%);
+    background:linear-gradient(90deg,#0d254f 0%, #1c64d7 100%);
     color:#fff;
     box-shadow:0 2px 12px rgba(15,23,42,.18);
     transition:all .25s ease;
@@ -62,12 +59,8 @@
     font-weight:800; font-size:24px; letter-spacing:2px;
     transition:all .25s ease; white-space:nowrap;
   }
-  .topbar.shrink .topbar-inner{
-    height:54px; padding:0 16px;
-  }
-  .topbar.shrink .title{
-    font-weight:700; font-size:18px; letter-spacing:1px;
-  }
+  .topbar.shrink .topbar-inner{ height:54px; padding:0 16px; }
+  .topbar.shrink .title{ font-weight:700; font-size:18px; letter-spacing:1px; }
 
   .hamburger{
     width:40px; height:40px;
@@ -89,11 +82,8 @@
   .hamburger span::before{ top:-6px;}
   .hamburger span::after{ top:6px;}
 
-  .user-info{
-    font-size:13px; opacity:.95;
-  }
+  .user-info{ font-size:13px; opacity:.95; }
 
-  /* ====== 漢堡選單下拉 ====== */
   .menu-drawer{
     max-width:1200px; margin:0 auto;
     background:rgba(255,255,255,.98);
@@ -109,12 +99,8 @@
   }
   .menu-drawer.open{ display:grid; }
 
-  .menu-section-title{
-    font-size:13px; font-weight:600; color:var(--muted); margin-bottom:6px;
-  }
-  .chip-list{
-    display:flex; flex-wrap:wrap; gap:8px;
-  }
+  .menu-section-title{ font-size:13px; font-weight:600; color:var(--muted); margin-bottom:6px; }
+  .chip-list{ display:flex; flex-wrap:wrap; gap:8px; }
   .chip-link{
     display:inline-flex; align-items:center; justify-content:center;
     padding:6px 10px;
@@ -132,10 +118,7 @@
     background:#e5f0ff;
   }
 
-  /* ====== 公用按鈕 / 輸入 ====== */
-  input, select, button, textarea{
-    font-family:inherit;
-  }
+  input, select, button, textarea{ font-family:inherit; }
   input, select, button{
     height:44px;
     padding:10px 12px;
@@ -166,30 +149,17 @@
     border:1px solid #2f80ed;
     color:#1b4f9d;
   }
-  .btn-ghost:hover{
-    background:#e7f1ff;
-  }
-  .btn-sm{
-    height:32px; padding:4px 10px; border-radius:999px; font-size:12px;
-  }
+  .btn-ghost:hover{ background:#e7f1ff; }
+  .btn-sm{ height:32px; padding:4px 10px; border-radius:999px; font-size:12px; }
 
-  /* ====== 首頁 Hero ＋ 4 個主選項 ====== */
-  .hero{
-    display:flex; flex-direction:column; gap:18px;
-    margin-bottom:20px;
-  }
+  .hero{ display:flex; flex-direction:column; gap:18px; margin-bottom:20px; }
   .hero-title{
     font-size:28px; font-weight:800; letter-spacing:1px;
     display:flex; align-items:flex-end; gap:10px;
     color:#143f7a;
   }
-  .hero-sub{
-    font-size:14px; color:var(--muted);
-  }
-  .action-grid{
-    display:grid; grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:14px;
-  }
+  .hero-sub{ font-size:14px; color:var(--muted); }
+  .action-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
   .action-card{
     background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(230,242,255,.96));
     border-radius:18px;
@@ -207,12 +177,8 @@
     box-shadow:0 12px 26px rgba(15,23,42,.18);
     border-color:#2f80ed;
   }
-  .action-card-title{
-    font-weight:700; margin-bottom:4px;
-  }
-  .action-card-desc{
-    font-size:12px; color:var(--muted); margin-bottom:8px;
-  }
+  .action-card-title{ font-weight:700; margin-bottom:4px; }
+  .action-card-desc{ font-size:12px; color:var(--muted); margin-bottom:8px; }
   .pill{
     font-size:11px;
     border-radius:999px;
@@ -223,7 +189,6 @@
     align-self:flex-start;
   }
 
-  /* ====== 中段：留言 / 行事曆 ====== */
   .middle-grid{
     display:grid; grid-template-columns:2fr 1.3fr;
     gap:20px; margin-top:16px; margin-bottom:26px;
@@ -240,18 +205,11 @@
     display:flex; justify-content:space-between; align-items:center;
     margin-bottom:10px;
   }
-  .panel-title{
-    font-size:15px; font-weight:700; color:#123763;
-  }
+  .panel-title{ font-size:15px; font-weight:700; color:#123763; }
   .panel-sub{ font-size:12px; color:var(--muted); }
 
-  /* 留言區 */
-  .note-input-row{
-    display:flex; gap:8px; margin-bottom:12px;
-  }
-  .note-input-row input{
-    flex:1;
-  }
+  .note-input-row{ display:flex; gap:8px; margin-bottom:12px; }
+  .note-input-row input{ flex:1; }
   .note-list{
     list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;
     max-height:200px; overflow:auto;
@@ -266,32 +224,14 @@
   .note-time{ font-size:11px; color:var(--muted); }
   form.inline{ display:inline; }
 
-  /* 行事曆 */
-  .calendar-header{
-    display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;
-  }
-  .calendar-title{
-    font-size:14px; font-weight:600; color:#123763;
-  }
-  .calendar-grid{
-    display:grid; grid-template-columns:repeat(7,1fr);
-    gap:4px; font-size:11px; margin-top:4px;
-  }
-  .calendar-cell{
-    text-align:center; padding:6px 0;
-    border-radius:8px;
-  }
+  .calendar-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .calendar-title{ font-size:14px; font-weight:600; color:#123763; }
+  .calendar-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:11px; margin-top:4px; }
+  .calendar-cell{ text-align:center; padding:6px 0; border-radius:8px; }
   .cal-weekday{ font-weight:600; color:var(--muted); }
-  .cal-day{
-    background:#f7f9ff;
-  }
-  .cal-day.today{
-    background:#d7e8ff;
-    font-weight:700;
-    color:#1b4f9d;
-  }
+  .cal-day{ background:#f7f9ff; }
+  .cal-day.today{ background:#d7e8ff; font-weight:700; color:#1b4f9d; }
 
-  /* ====== 區塊標題 ====== */
   .section{
     margin-top:28px;
     background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(226,239,255,.96));
@@ -301,35 +241,21 @@
     box-shadow:0 4px 16px rgba(15,23,42,.12);
     backdrop-filter:blur(8px);
   }
-  .section-header{
-    display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;
-  }
-  .section-title{
-    font-size:18px; font-weight:700; color:#123763;
-  }
+  .section-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .section-title{ font-size:18px; font-weight:700; color:#123763; }
   .section-sub{ font-size:12px; color:var(--muted); }
 
-  /* ====== 表單：新增／查詢區 ====== */
-  .row{
-    display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;
-  }
-  .row>.field{
-    display:flex; flex-direction:column; min-width:180px; flex:1 1 220px;
-  }
+  .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+  .row>.field{ display:flex; flex-direction:column; min-width:180px; flex:1 1 220px; }
   .field--actions{ align-self:flex-end; display:flex; gap:8px; flex-wrap:wrap; }
 
   label{ font-size:12px; color:var(--muted); margin:2px 0 6px; }
   .form-help{ margin-top:6px; color:var(--muted); font-size:12px; }
 
-  .ai-input-wrap{
-    display:flex; gap:6px; align-items:center;
-  }
+  .ai-input-wrap{ display:flex; gap:6px; align-items:center; }
   .ai-input-wrap input{ flex:1; }
-  .btn-ai{
-    white-space:nowrap;
-  }
+  .btn-ai{ white-space:nowrap; }
 
-  /* ====== 物料清單表格 ====== */
   table{border-collapse:collapse; width:100%; margin-top:10px;}
   th,td{
     border:1px solid var(--border);
@@ -338,10 +264,7 @@
     font-size:13px;
     background:#ffffff;
   }
-  th{
-    background:var(--blue-light);
-    text-align:left;
-  }
+  th{ background:var(--blue-light); text-align:left; }
 
   .badge{
     display:inline-flex; align-items:center; justify-content:center;
@@ -354,11 +277,8 @@
   .badge-exp7{ background:#fef3c7; color:var(--warn); }
   .badge-exp14{ background:#fffbeb; color:#92400e; }
 
-  tr.low-stock-row{
-    background:#fff5f5;
-  }
+  tr.low-stock-row{ background:#fff5f5; }
 
-  /* ====== 數量修改小視窗 ====== */
   .modal-backdrop{
     position:fixed; inset:0;
     background:rgba(15,23,42,.45);
@@ -373,18 +293,11 @@
     width:260px;
     box-shadow:0 20px 40px rgba(15,23,42,.45);
   }
-  .modal h3{
-    margin:0 0 8px; font-size:16px; color:#123763;
-  }
+  .modal h3{ margin:0 0 8px; font-size:16px; color:#123763; }
   .modal p{ margin:0 0 10px; font-size:13px; color:var(--muted); }
-  .modal input{
-    width:100%; margin-bottom:12px;
-  }
-  .modal-actions{
-    display:flex; justify-content:flex-end; gap:8px;
-  }
+  .modal input{ width:100%; margin-bottom:12px; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:8px; }
 
-  /* ====== 新增成功 Toast ====== */
   .toast{
     position:fixed;
     top:50%; left:50%;
@@ -399,18 +312,9 @@
     animation:toast-in 2.2s ease forwards;
   }
   @keyframes toast-in{
-    0%{
-      opacity:0;
-      transform:translate(-50%,-60%);
-    }
-    10%,80%{
-      opacity:1;
-      transform:translate(-50%,-50%);
-    }
-    100%{
-      opacity:0;
-      transform:translate(-50%,-52%);
-    }
+    0%{ opacity:0; transform:translate(-50%,-60%); }
+    10%,80%{ opacity:1; transform:translate(-50%,-50%); }
+    100%{ opacity:0; transform:translate(-50%,-52%); }
   }
 
   @media (max-width:900px){
@@ -429,17 +333,14 @@
 
 </head>
 <body>
-  <!-- ====== 頂部藍條＋標題＋三條線 ====== -->
   <header class="topbar" id="topbar">
     <div class="topbar-inner">
       <div style="display:flex; align-items:center; gap:8px;">
-        <div class="hamburger" id="btnMenu">
-          <span></span>
-        </div>
+        <div class="hamburger" id="btnMenu"><span></span></div>
         <div class="title">家庭物料管理系統</div>
       </div>
+
       <div class="user-info">
-        <!-- 已登入：顯示使用者名稱 + 登出按鈕 -->
         <span th:if="${session.loginUser != null}">
           歡迎，
           <span th:text="${session.loginUser.displayName != null} ? ${session.loginUser.displayName} : ${session.loginUser.username}">
@@ -457,17 +358,14 @@
           </button>
         </form>
 
-        <!-- 未登入：顯示登入連結 -->
         <a th:if="${session.loginUser == null}"
-          th:href="@{/login}"
-          style="color:#e5e7eb; text-decoration:none; font-size:13px;">
+           th:href="@{/login}"
+           style="color:#e5e7eb; text-decoration:none; font-size:13px;">
           登入
         </a>
       </div>
-
     </div>
 
-    <!-- ====== 漢堡選單下拉：地點 / 類別 ====== -->
     <div class="menu-drawer" id="menuDrawer">
       <div>
         <div class="menu-section-title">依地點瀏覽</div>
@@ -488,17 +386,16 @@
     </div>
   </header>
 
-  <!-- ====== 新增成功訊息（有帶 successMessage 時顯示） ====== -->
-  <div class="toast" th:if="${successMessage}" th:text="${successMessage}">
+  <!-- 原本新增成功的 toast（保留） -->
+  <div class="toast"
+       th:if="${successMessage != null and !#strings.isEmpty(successMessage)}"
+       th:text="${successMessage}">
     新增成功！
   </div>
 
   <main>
-    <!-- ====== Hero ＋ 4 個主選項 ====== -->
     <section class="hero">
-      <div class="hero-title">
-        <span>歡迎回來，開始整理你的家庭物資吧。</span>
-      </div>
+      <div class="hero-title"><span>歡迎回來，開始整理你的家庭物資吧。</span></div>
       <p class="hero-sub">
         登入後首頁提供新增、查詢、即將過期與數量不足的快速入口；左上角三條線可依地點或物品類別快速跳轉。
       </p>
@@ -535,9 +432,7 @@
       </div>
     </section>
 
-    <!-- ====== 中段：留言 / 行事曆 ====== -->
     <section class="middle-grid">
-      <!-- 留言 / 交代事項 -->
       <div class="panel">
         <div class="panel-header">
           <div>
@@ -557,13 +452,17 @@
             <form class="inline" th:action="@{|/notes/${note.id}/toggle|}" method="post">
               <input type="checkbox" onchange="this.form.submit()" />
             </form>
+
             <div class="note-text" th:text="${note.text}">把客廳零食區重新整理</div>
-            <div class="note-time" th:text="${#temporals.format(note.createdAt,'MM/dd HH:mm')}">11/17 21:05</div>
+
+            <!-- ✅ createdAt null-safe -->
+            <div class="note-time" th:if="${note.createdAt != null}"
+                 th:text="${#temporals.format(note.createdAt,'MM/dd HH:mm')}">11/17 21:05</div>
+            <div class="note-time" th:if="${note.createdAt == null}">--</div>
           </li>
         </ul>
       </div>
 
-      <!-- 行事曆 -->
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">家庭行事曆</div>
@@ -573,13 +472,10 @@
           <div class="calendar-title" id="calTitle">2025 / 11</div>
           <button type="button" class="btn btn-ghost btn-sm" id="calNext">&gt;</button>
         </div>
-        <div class="calendar-grid" id="calendarGrid">
-          <!-- JS 產生 -->
-        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
       </div>
     </section>
 
-    <!-- ====== 新增／查詢 區（同一個表單） ====== -->
     <section class="section" id="section-create">
       <div class="section-header">
         <div>
@@ -590,7 +486,6 @@
 
       <form th:object="${item}" id="createSearchForm" method="post" th:action="@{/items}">
         <div class="row">
-          <!-- 名稱 + AI 幫忙 -->
           <div class="field">
             <label>名稱（查詢時必填）</label>
             <div class="ai-input-wrap">
@@ -601,16 +496,23 @@
 
           <div class="field">
             <label>SKU</label>
-            <input th:field="*{sku}" placeholder="唯一代碼（選填）"/>
+            <input th:field="*{sku}" id="skuField" placeholder="唯一代碼（選填）"/>
           </div>
 
           <div class="field">
-            <label>物品類別</label>
-            <select th:field="*{category}">
-              <option value="">選擇類別（選填）</option>
-              <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}">食材</option>
-            </select>
-          </div>
+  <label>物品類別</label>
+
+  <select id="categorySelect-create">
+    <option value="" selected>選擇類別（選填）</option>
+    <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}">食材</option>
+    <option value="__NEW__">＋新增類別…</option>
+  </select>
+
+  <input id="categoryInput-create" type="text" placeholder="輸入新類別" style="display:none;" />
+
+  <input type="hidden" th:field="*{category}" id="categoryField-create"/>
+</div>
+
 
           <div class="field">
             <label>房間</label>
@@ -658,7 +560,6 @@
       </form>
     </section>
 
-    <!-- ====== 物料清單 ====== -->
     <section class="section" id="section-list">
       <div class="section-header">
         <div>
@@ -680,39 +581,48 @@
         </tr>
         </thead>
         <tbody>
+        <!-- ✅ 不再用 it.lowStock / it.daysToExpire（避免 getter 炸掉） -->
         <tr th:each="it : ${items}"
-            th:classappend="${it.lowStock} ? 'low-stock-row'">
+            th:classappend="${it.quantity != null and it.quantity <= 0} ? 'low-stock-row' : ''">
           <td th:text="${it.id}">1</td>
 
           <td>
             <div th:text="${it.name}">螺絲</div>
-            <div style="font-size:11px; color:var(--muted);" th:text="${it.category}">五金</div>
+            <div style="font-size:11px; color:var(--muted);"
+                 th:text="${it.category != null and !#strings.isEmpty(it.category) ? it.category : '-'}">五金</div>
           </td>
 
-          <td th:text="${it.sku}">SCREW-M3</td>
+          <td th:text="${it.sku != null and !#strings.isEmpty(it.sku) ? it.sku : '-'}">SCREW-M3</td>
 
           <td>
             <div style="font-size:11px; color:var(--muted);">
-              房間：<span th:text="${it.room}">客廳</span>
+              房間：<span th:text="${it.room != null and !#strings.isEmpty(it.room) ? it.room : '-'}">客廳</span>
             </div>
-            <div>儲位：<strong th:text="${it.location}">A1-3</strong></div>
+            <div>儲位：<strong th:text="${it.location != null and !#strings.isEmpty(it.location) ? it.location : 'UNASSIGNED'}">A1-3</strong></div>
           </td>
 
           <td>
-            <div><span th:text="${it.unit}">pcs</span> × <span th:text="${it.quantity}">100</span></div>
-            <div th:if="${it.lowStock}" class="badge badge-low">數量不足</div>
+            <div>
+              <span th:text="${it.unit != null and !#strings.isEmpty(it.unit) ? it.unit : '-'}">pcs</span>
+              ×
+              <span th:text="${it.quantity != null ? it.quantity : 0}">100</span>
+            </div>
+            <div th:if="${it.quantity != null and it.quantity <= 0}" class="badge badge-low">數量不足</div>
           </td>
 
-          <td>
-            <div th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}" >2025/12/31</div>
-            <div th:if="${it.daysToExpire != null}">
-              <span class="badge badge-exp7" th:if="${it.daysToExpire &lt;= 7 && it.daysToExpire &gt;= 0}">7 天內到期</span>
-              <span class="badge badge-exp14" th:if="${it.daysToExpire &lt;= 14 && it.daysToExpire &gt; 7}">14 天內到期</span>
+          <!-- ✅ 不呼叫 it.daysToExpire，直接用 ChronoUnit 在模板算 -->
+          <td th:with="d=${it.expireDate != null ? T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), it.expireDate) : null}">
+            <div th:if="${it.expireDate != null}"
+                 th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}">2025/12/31</div>
+            <div th:if="${it.expireDate == null}" style="color: var(--muted);">-</div>
+
+            <div th:if="${d != null}">
+              <span class="badge badge-exp7"  th:if="${d <= 7 and d >= 0}">7 天內到期</span>
+              <span class="badge badge-exp14" th:if="${d <= 14 and d > 7}">14 天內到期</span>
             </div>
           </td>
 
           <td>
-            <!-- 小量調整 -->
             <form class="inline" th:action="@{|/items/${it.id}/adjust|}" method="post">
               <input type="hidden" name="delta" value="1">
               <button type="submit" class="btn btn-ghost btn-sm">+1</button>
@@ -722,14 +632,12 @@
               <button type="submit" class="btn btn-ghost btn-sm">-1</button>
             </form>
 
-            <!-- 大量修改：小視窗 -->
             <button type="button"
                     class="btn btn-ghost btn-sm btn-editQty"
-                    th:attr="data-id=${it.id},data-current=${it.quantity}">
+                    th:attr="data-id=${it.id},data-current=${it.quantity != null ? it.quantity : 0}">
               更改數量
             </button>
 
-            <!-- 刪除 -->
             <form class="inline" th:action="@{|/items/${it.id}/delete|}" method="post"
                   onsubmit="return confirm('確定刪除？')">
               <button type="submit" class="btn btn-ghost btn-sm">刪除</button>
@@ -741,95 +649,129 @@
     </section>
 
     <section class="section" id="section-expire">
-  <div class="section-header">
-    <div>
-      <div class="section-title">過期 / 即將到期物品</div>
-      <div class="section-sub">分成「已過期」、「7 天內到期」、「14 天內到期」，方便你快速處理。</div>
-    </div>
-  </div>
+      <div class="section-header">
+        <div>
+          <div class="section-title">過期 / 即將到期物品</div>
+          <div class="section-sub">分成「已過期」、「7 天內到期」、「14 天內到期」，方便你快速處理。</div>
+        </div>
+      </div>
 
-  <!-- 已過期 -->
-  <div style="font-weight:700; color:#123763; margin:6px 0 6px;">已過期</div>
-  <table th:if="${#lists.size(expiredItems) > 0}">
-    <thead>
-    <tr>
-      <th>ID</th><th>名稱</th><th>類別</th><th>房間/儲位</th><th>數量</th><th>到期日</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="it : ${expiredItems}">
-      <td th:text="${it.id}">1</td>
-      <td th:text="${it.name}">牛奶</td>
-      <td th:text="${it.category}">食材</td>
-      <td>房間：<span th:text="${it.room}"></span> ／ 儲位：<strong th:text="${it.location}"></strong></td>
-      <td><span th:text="${it.unit}"></span> × <span th:text="${it.quantity}"></span></td>
-      <td>
-        <div th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}"></div>
-        <span class="badge badge-low">已過期</span>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-  <p th:if="${#lists.size(expiredItems) == 0}" style="font-size:13px;color:var(--muted);margin:0 0 12px;">
-    目前沒有已過期物品 ✅
-  </p>
+      <div style="font-weight:700; color:#123763; margin:6px 0 6px;">已過期</div>
+      <table th:if="${expiredItems != null and #lists.size(expiredItems) > 0}">
+        <thead>
+        <tr>
+          <th>ID</th><th>名稱</th><th>類別</th><th>房間/儲位</th><th>數量</th><th>到期日</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="it : ${expiredItems}">
+          <td th:text="${it.id}">1</td>
+          <td th:text="${it.name}">牛奶</td>
+          <td th:text="${it.category != null and !#strings.isEmpty(it.category) ? it.category : '-'}">食材</td>
+          <td>
+            房間：<span th:text="${it.room != null and !#strings.isEmpty(it.room) ? it.room : '-'}"></span>
+            ／ 儲位：<strong th:text="${it.location != null and !#strings.isEmpty(it.location) ? it.location : 'UNASSIGNED'}"></strong>
+          </td>
+          <td>
+            <span th:text="${it.unit != null and !#strings.isEmpty(it.unit) ? it.unit : '-'}"></span>
+            ×
+            <span th:text="${it.quantity != null ? it.quantity : 0}"></span>
+          </td>
+          <td>
+            <div th:if="${it.expireDate != null}" th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}"></div>
+            <div th:if="${it.expireDate == null}" style="color:var(--muted);">-</div>
+            <span class="badge badge-low">已過期</span>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <p th:if="${expiredItems == null or #lists.size(expiredItems) == 0}"
+         style="font-size:13px;color:var(--muted);margin:0 0 12px;">
+        目前沒有已過期物品 ✅
+      </p>
 
-  <!-- 7 天內 -->
-  <div style="font-weight:700; color:#123763; margin:10px 0 6px;">7 天內到期</div>
-  <table th:if="${#lists.size(exp7Items) > 0}">
-    <thead>
-    <tr>
-      <th>ID</th><th>名稱</th><th>房間/儲位</th><th>數量</th><th>到期日</th><th>剩餘</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="it : ${exp7Items}">
-      <td th:text="${it.id}">1</td>
-      <td>
-        <div th:text="${it.name}"></div>
-        <div style="font-size:11px; color:var(--muted);" th:text="${it.category}"></div>
-      </td>
-      <td>房間：<span th:text="${it.room}"></span> ／ 儲位：<strong th:text="${it.location}"></strong></td>
-      <td><span th:text="${it.unit}"></span> × <span th:text="${it.quantity}"></span></td>
-      <td th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}"></td>
-      <td><span class="badge badge-exp7" th:text="${it.daysToExpire} + ' 天'">3 天</span></td>
-    </tr>
-    </tbody>
-  </table>
-  <p th:if="${#lists.size(exp7Items) == 0}" style="font-size:13px;color:var(--muted);margin:0 0 12px;">
-    目前沒有 7 天內到期物品 ✅
-  </p>
+      <div style="font-weight:700; color:#123763; margin:10px 0 6px;">7 天內到期</div>
+      <table th:if="${exp7Items != null and #lists.size(exp7Items) > 0}">
+        <thead>
+        <tr>
+          <th>ID</th><th>名稱</th><th>房間/儲位</th><th>數量</th><th>到期日</th><th>剩餘</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="it : ${exp7Items}"
+            th:with="d=${it.expireDate != null ? T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), it.expireDate) : null}">
+          <td th:text="${it.id}">1</td>
+          <td>
+            <div th:text="${it.name}"></div>
+            <div style="font-size:11px; color:var(--muted);" th:text="${it.category != null and !#strings.isEmpty(it.category) ? it.category : '-'}"></div>
+          </td>
+          <td>
+            房間：<span th:text="${it.room != null and !#strings.isEmpty(it.room) ? it.room : '-'}"></span>
+            ／ 儲位：<strong th:text="${it.location != null and !#strings.isEmpty(it.location) ? it.location : 'UNASSIGNED'}"></strong>
+          </td>
+          <td>
+            <span th:text="${it.unit != null and !#strings.isEmpty(it.unit) ? it.unit : '-'}"></span>
+            ×
+            <span th:text="${it.quantity != null ? it.quantity : 0}"></span>
+          </td>
+          <td>
+            <div th:if="${it.expireDate != null}" th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}"></div>
+            <div th:if="${it.expireDate == null}" style="color:var(--muted);">-</div>
+          </td>
+          <td>
+            <span class="badge badge-exp7" th:if="${d != null}" th:text="${d} + ' 天'">3 天</span>
+            <span th:if="${d == null}" style="color:var(--muted);">-</span>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <p th:if="${exp7Items == null or #lists.size(exp7Items) == 0}"
+         style="font-size:13px;color:var(--muted);margin:0 0 12px;">
+        目前沒有 7 天內到期物品 ✅
+      </p>
 
-  <!-- 14 天內 -->
-  <div style="font-weight:700; color:#123763; margin:10px 0 6px;">14 天內到期</div>
-  <table th:if="${#lists.size(exp14Items) > 0}">
-    <thead>
-    <tr>
-      <th>ID</th><th>名稱</th><th>房間/儲位</th><th>數量</th><th>到期日</th><th>剩餘</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="it : ${exp14Items}">
-      <td th:text="${it.id}">1</td>
-      <td>
-        <div th:text="${it.name}"></div>
-        <div style="font-size:11px; color:var(--muted);" th:text="${it.category}"></div>
-      </td>
-      <td>房間：<span th:text="${it.room}"></span> ／ 儲位：<strong th:text="${it.location}"></strong></td>
-      <td><span th:text="${it.unit}"></span> × <span th:text="${it.quantity}"></span></td>
-      <td th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}"></td>
-      <td><span class="badge badge-exp14" th:text="${it.daysToExpire} + ' 天'">10 天</span></td>
-    </tr>
-    </tbody>
-  </table>
-  <p th:if="${#lists.size(exp14Items) == 0}" style="font-size:13px;color:var(--muted);margin:0;">
-    目前沒有 14 天內到期物品 ✅
-  </p>
-</section>
-
+      <div style="font-weight:700; color:#123763; margin:10px 0 6px;">14 天內到期</div>
+      <table th:if="${exp14Items != null and #lists.size(exp14Items) > 0}">
+        <thead>
+        <tr>
+          <th>ID</th><th>名稱</th><th>房間/儲位</th><th>數量</th><th>到期日</th><th>剩餘</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="it : ${exp14Items}"
+            th:with="d=${it.expireDate != null ? T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), it.expireDate) : null}">
+          <td th:text="${it.id}">1</td>
+          <td>
+            <div th:text="${it.name}"></div>
+            <div style="font-size:11px; color:var(--muted);" th:text="${it.category != null and !#strings.isEmpty(it.category) ? it.category : '-'}"></div>
+          </td>
+          <td>
+            房間：<span th:text="${it.room != null and !#strings.isEmpty(it.room) ? it.room : '-'}"></span>
+            ／ 儲位：<strong th:text="${it.location != null and !#strings.isEmpty(it.location) ? it.location : 'UNASSIGNED'}"></strong>
+          </td>
+          <td>
+            <span th:text="${it.unit != null and !#strings.isEmpty(it.unit) ? it.unit : '-'}"></span>
+            ×
+            <span th:text="${it.quantity != null ? it.quantity : 0}"></span>
+          </td>
+          <td>
+            <div th:if="${it.expireDate != null}" th:text="${#temporals.format(it.expireDate,'yyyy/MM/dd')}"></div>
+            <div th:if="${it.expireDate == null}" style="color:var(--muted);">-</div>
+          </td>
+          <td>
+            <span class="badge badge-exp14" th:if="${d != null}" th:text="${d} + ' 天'">10 天</span>
+            <span th:if="${d == null}" style="color:var(--muted);">-</span>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <p th:if="${exp14Items == null or #lists.size(exp14Items) == 0}"
+         style="font-size:13px;color:var(--muted);margin:0;">
+        目前沒有 14 天內到期物品 ✅
+      </p>
+    </section>
   </main>
 
-  <!-- ====== 數量修改小視窗 ====== -->
   <div class="modal-backdrop" id="qtyModalBg">
     <div class="modal">
       <h3>更改數量</h3>
@@ -856,11 +798,9 @@
     /* ====== 漢堡選單開關 ====== */
     const btnMenu = document.getElementById('btnMenu');
     const menuDrawer = document.getElementById('menuDrawer');
-    btnMenu.addEventListener('click', () => {
-      menuDrawer.classList.toggle('open');
-    });
+    btnMenu?.addEventListener('click', () => menuDrawer?.classList.toggle('open'));
     document.addEventListener('click',(e)=>{
-      if(!menuDrawer.contains(e.target) && !btnMenu.contains(e.target)){
+      if(menuDrawer && btnMenu && !menuDrawer.contains(e.target) && !btnMenu.contains(e.target)){
         menuDrawer.classList.remove('open');
       }
     });
@@ -869,21 +809,22 @@
     const selCreate = document.getElementById('locationSelect-create');
     const inputCreate = document.getElementById('locationInput-create');
     const fieldCreate = document.getElementById('locationField-create');
+
     function syncCreateLocation(){
       if (!selCreate) return;
       const v = selCreate.value;
       if (v === '__NEW__'){
-        inputCreate.style.display='';
-        fieldCreate.value = inputCreate.value.trim();
+        if (inputCreate) inputCreate.style.display='';
+        if (fieldCreate) fieldCreate.value = (inputCreate?.value || '').trim();
       } else {
-        inputCreate.style.display='none';
-        fieldCreate.value = v || '';
+        if (inputCreate) inputCreate.style.display='none';
+        if (fieldCreate) fieldCreate.value = v || '';
       }
     }
     if (selCreate){
       selCreate.addEventListener('change', syncCreateLocation);
-      inputCreate.addEventListener('input', () => {
-        if (selCreate.value==='__NEW__') fieldCreate.value = inputCreate.value.trim();
+      inputCreate?.addEventListener('input', () => {
+        if (selCreate.value==='__NEW__' && fieldCreate) fieldCreate.value = (inputCreate.value || '').trim();
       });
     }
 
@@ -892,42 +833,171 @@
     const nameField = document.getElementById('nameField');
     const btnCreateEl = document.getElementById('btnCreate');
     const btnSearchEl = document.getElementById('btnSearch');
+    /* ====== 類別下拉／自訂 ====== */
+const catSelect = document.getElementById('categorySelect');
+const catInput  = document.getElementById('categoryInput');
+const catField  = document.getElementById('categoryField');
 
-    if (btnCreateEl){
-      btnCreateEl.addEventListener('click', (e)=>{
-        syncCreateLocation();
-        if (!fieldCreate.value){
-          e.preventDefault();
-          alert('新增時請選擇或輸入儲位');
-          return;
-        }
-        formCS.method = 'post'; // 由 th:action=/items
-      });
+function syncCategory(){
+  if (!catSelect) return;
+
+  const v = catSelect.value;
+  if (v === '__NEW__') {
+    catInput.style.display = '';
+    catField.value = catInput.value.trim();
+  } else {
+    catInput.style.display = 'none';
+    catField.value = v || '';
+  }
+}
+
+if (catSelect){
+  catSelect.addEventListener('change', syncCategory);
+  catInput.addEventListener('input', ()=>{
+    if (catSelect.value === '__NEW__') {
+      catField.value = catInput.value.trim();
     }
+  });
+}
 
-    if (btnSearchEl){
-      btnSearchEl.addEventListener('click', (e)=>{
-        if (!nameField.value.trim()){
-          e.preventDefault();
-          alert('請輸入名稱再查詢');
-          return;
+
+    btnCreateEl?.addEventListener('click', (e)=>{
+      syncCreateLocation();
+      syncCategory();
+      if (!fieldCreate?.value){
+        e.preventDefault();
+        alert('新增時請選擇或輸入儲位');
+        return;
+      }
+      if (formCS) formCS.method = 'post';
+    });
+
+    btnSearchEl?.addEventListener('click', (e)=>{
+      if (!nameField?.value?.trim()){
+        e.preventDefault();
+        alert('請輸入名稱再查詢');
+        return;
+      }
+      Array.from(formCS.elements).forEach(el=>{
+        if(['INPUT','SELECT'].includes(el.tagName) && !el.value){
+          if(el.name) el.disabled = true;
         }
-        Array.from(formCS.elements).forEach(el=>{
-          if(['INPUT','SELECT'].includes(el.tagName) && !el.value){
-            if(el.name) el.disabled = true;
-          }
-        });
       });
-    }
+    });
 
-    /* ====== AI 填寫物品名稱（目前先做示意） ====== */
+    /* ====== ✅ AI 填寫 + 綠色提示彈窗 ====== */
     const btnAiSuggest = document.getElementById('btnAiSuggest');
-    if (btnAiSuggest && nameField){
-      btnAiSuggest.addEventListener('click', ()=>{
-        alert('目前尚未串接 AI，之後可在這裡呼叫後端服務自動建議名稱。');
-        nameField.focus();
-      });
+
+    function showGreenToast(msg){
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(()=> t.remove(), 2300);
     }
+
+    function applyLocationToUI(loc){
+      const locHidden = document.getElementById('locationField-create');
+      const locSelect = document.getElementById('locationSelect-create');
+      const locInput  = document.getElementById('locationInput-create');
+
+      if (!loc) return;
+
+      if (locHidden) locHidden.value = loc;
+
+      if (locSelect) {
+        const hasOption = Array.from(locSelect.options).some(o => o.value === loc);
+        if (hasOption) {
+          locSelect.value = loc;
+          if (locInput) locInput.style.display = 'none';
+        } else {
+          locSelect.value = '__NEW__';
+          if (locInput) {
+            locInput.style.display = '';
+            locInput.value = loc;
+          }
+        }
+      }
+    }
+
+    async function aiFill() {
+      const skuEl = document.getElementById('skuField') || document.querySelector('[name="sku"]');
+      const name = (nameField?.value || '').trim();
+
+      if (!name) {
+        alert('請先輸入名稱再使用 AI');
+        return;
+      }
+
+      let res;
+      try{
+        res = await fetch('/ai/suggest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+      }catch(e){
+        alert('AI 連線失敗：' + e.message);
+        return;
+      }
+
+      if(!res.ok){
+        const text = await res.text();
+        alert('AI 服務錯誤：' + text);
+        return;
+      }
+
+      const data = await res.json();
+        // ====== AI 填 SKU ======
+  if (data.sku && skuEl) {
+    skuEl.value = data.sku;
+  }
+
+  // ====== AI 填 儲位 ======
+  if (data.location) {
+    applyLocationToUI(data.location);
+  }
+
+  // ====== ✅ AI 填 類別（你問的就是這段） ======
+  const catField = document.getElementById('categoryField');
+  // ====== ✅ AI 填 類別（支援 select 沒有就走新增） ======
+if (data.category) {
+  const catHidden = document.getElementById('categoryField-create');
+  const catSelect = document.getElementById('categorySelect-create');
+  const catInput  = document.getElementById('categoryInput-create');
+
+  // hidden 一定要寫（真正送到後端的）
+  if (catHidden) catHidden.value = data.category;
+
+  if (catSelect) {
+    const hasOption = Array.from(catSelect.options).some(o => o.value === data.category);
+    if (hasOption) {
+      catSelect.value = data.category;
+      if (catInput) catInput.style.display = 'none';
+    } else {
+      catSelect.value = '__NEW__';
+      if (catInput) {
+        catInput.style.display = '';
+        catInput.value = data.category;
+      }
+    }
+  }
+
+  showGreenToast(`AI 建議類別：${data.category}`);
+}
+
+
+
+      console.log('AI suggest:', data);
+
+      if (skuEl && data.sku) skuEl.value = data.sku;
+      if (data.location) applyLocationToUI(data.location);
+
+      const msg = `AI 已填寫：SKU=${data.sku || '-'} / 儲位=${data.location || '-'}` + (data.reason ? `（${data.reason}）` : '');
+      showGreenToast(msg);
+    }
+
+    btnAiSuggest?.addEventListener('click', ()=> aiFill());
 
     /* ====== 行事曆簡易渲染 ====== */
     const calTitle = document.getElementById('calTitle');
@@ -935,14 +1005,15 @@
     const calPrev = document.getElementById('calPrev');
     const calNext = document.getElementById('calNext');
 
-    let calYear, calMonth; // month: 0-11
+    let calYear, calMonth;
     const today = new Date();
 
     function renderCalendar(){
       const firstDay = new Date(calYear, calMonth, 1);
-      const firstWeekday = firstDay.getDay(); // 0 Sun
+      const firstWeekday = firstDay.getDay();
       const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-      calTitle.textContent = calYear + ' / ' + (calMonth+1).toString().padStart(2,'0');
+      if (calTitle) calTitle.textContent = calYear + ' / ' + (calMonth+1).toString().padStart(2,'0');
+      if (!calGrid) return;
       calGrid.innerHTML = '';
 
       const weekdays = ['日','一','二','三','四','五','六'];
@@ -975,12 +1046,12 @@
       calYear = today.getFullYear();
       calMonth = today.getMonth();
       renderCalendar();
-      calPrev.addEventListener('click', ()=>{
+      calPrev?.addEventListener('click', ()=>{
         calMonth--;
         if (calMonth<0){ calMonth=11; calYear--; }
         renderCalendar();
       });
-      calNext.addEventListener('click', ()=>{
+      calNext?.addEventListener('click', ()=>{
         calMonth++;
         if (calMonth>11){ calMonth=0; calYear++; }
         renderCalendar();
@@ -996,13 +1067,13 @@
 
     function openQtyModal(id, current){
       editingItemId = id;
-      qtyInput.value = current;
-      qtyModalBg.classList.add('show');
-      qtyInput.focus();
-      qtyInput.select();
+      if (qtyInput) qtyInput.value = current;
+      qtyModalBg?.classList.add('show');
+      qtyInput?.focus();
+      qtyInput?.select();
     }
     function closeQtyModal(){
-      qtyModalBg.classList.remove('show');
+      qtyModalBg?.classList.remove('show');
       editingItemId = null;
     }
 
@@ -1015,41 +1086,32 @@
       }
     });
 
-    if (qtyCancel){
-      qtyCancel.addEventListener('click', closeQtyModal);
-    }
-    if (qtyModalBg){
-      qtyModalBg.addEventListener('click',(e)=>{
-        if(e.target === qtyModalBg) closeQtyModal();
-      });
-    }
-    if (qtyOk){
-      qtyOk.addEventListener('click', ()=>{
-        const v = parseInt(qtyInput.value,10);
-        if(isNaN(v) || v<0){
-          alert('請輸入大於等於 0 的數字');
-          return;
-        }
-        if(!editingItemId){
-          closeQtyModal();
-          return;
-        }
-        const form = document.createElement('form');
-        form.method = 'post';
-        form.action = '/items/' + encodeURIComponent(editingItemId) + '/setQuantity'; // 之後在後端實作
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'quantity';
-        input.value = v;
-        form.appendChild(input);
-        document.body.appendChild(form);
-        form.submit();
-      });
-    }
+    qtyCancel?.addEventListener('click', closeQtyModal);
+    qtyModalBg?.addEventListener('click',(e)=>{ if(e.target === qtyModalBg) closeQtyModal(); });
 
-    document.addEventListener('keydown',(e)=>{
-      if(e.key === 'Escape') closeQtyModal();
+    qtyOk?.addEventListener('click', ()=>{
+      const v = parseInt(qtyInput?.value ?? '0',10);
+      if(isNaN(v) || v<0){
+        alert('請輸入大於等於 0 的數字');
+        return;
+      }
+      if(!editingItemId){
+        closeQtyModal();
+        return;
+      }
+      const form = document.createElement('form');
+      form.method = 'post';
+      form.action = '/items/' + encodeURIComponent(editingItemId) + '/setQuantity';
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'quantity';
+      input.value = v;
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
     });
+
+    document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape') closeQtyModal(); });
   </script>
 </body>
 </html>

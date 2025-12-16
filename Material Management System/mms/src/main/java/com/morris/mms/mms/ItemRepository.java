@@ -1,9 +1,10 @@
 package com.morris.mms.mms;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-
-import java.util.List;
+import org.springframework.data.repository.query.Param;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
@@ -18,4 +19,30 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query("select distinct i.location from Item i where i.location is not null and i.location<>'' order by i.location")
     List<String> distinctLocations();
+
+   @Query("""
+    SELECT TRIM(i.location), COUNT(i.id) AS c
+    FROM Item i
+    WHERE i.name IS NOT NULL
+      AND LOWER(TRIM(i.name)) = LOWER(TRIM(:name))
+      AND i.location IS NOT NULL
+      AND TRIM(i.location) <> ''
+    GROUP BY TRIM(i.location)
+    ORDER BY c DESC
+""")
+List<Object[]> topLocationsByName(@Param("name") String name);
+    @Query("""
+select i.category, count(i) as c
+from Item i
+where lower(i.name) = lower(:name) and i.category is not null and i.category <> ''
+group by i.category
+order by c desc
+""")
+java.util.List<Object[]> topCategoriesByName(@Param("name") String name);
+
+
+
+    Item findTop1ByNameIgnoreCaseAndSkuIsNotNullOrderByIdDesc(String name);
+
+
 }
