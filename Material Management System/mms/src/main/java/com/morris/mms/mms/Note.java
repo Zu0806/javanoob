@@ -19,6 +19,7 @@ public class Note {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    private String authorName;
     // ===== getters/setters =====
     public Long getId() { return id; }
 
@@ -29,4 +30,7 @@ public class Note {
     public void setDone(boolean done) { this.done = done; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
+
+    public String getAuthorName() { return authorName; }
+    public void setAuthorName(String authorName) { this.authorName = authorName; }
 }

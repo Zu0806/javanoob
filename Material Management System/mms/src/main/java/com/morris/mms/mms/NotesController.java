@@ -25,6 +25,7 @@ public class NotesController {
         if (text != null && !text.isBlank()) {
             Note note = new Note();
             note.setText(text.trim());
+            note.setAuthorName(loginUser.getUsername());
             noteRepository.save(note);
         }
         return "redirect:/notes";
