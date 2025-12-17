@@ -27,7 +27,7 @@ public class NotesController {
             note.setText(text.trim());
             noteRepository.save(note);
         }
-        return "redirect:/items#section-notes";
+        return "redirect:/notes";
     }
 
     @PostMapping("/notes/{id}/toggle")
@@ -39,7 +39,7 @@ public class NotesController {
             note.setDone(!note.isDone());
             noteRepository.save(note);
         });
-        return "redirect:/items#section-notes";
+        return "redirect:/notes";
     }
 
     @GetMapping("/notes")
