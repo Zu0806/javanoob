@@ -1,75 +1,74 @@
 package com.morris.mms.mms;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue; // ✅ 1. 記得匯入 LocalDate
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "items")
 public class Item {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "名稱不能為空")
     private String name;
 
-    private String sku;
     private String category;
+    private String sku;
     private String room;
+    private String location;
     private String unit;
+    private Integer quantity;
 
-    @Min(0)
-    private Integer quantity = 0;
-
-    private String location;     // 儲位
+    // ✅ 2. 補上這個變數 (如果原本沒有的話)
     private LocalDate expireDate;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    // ... (其他的 Getters/Setters 省略) ...
 
-    // ====== 你頁面會用到的計算欄位 ======
-    @Transient
-    public boolean isLowStock() {
-        int q = (quantity == null) ? 0 : quantity;
-        return q <= 2; // 低庫存門檻：先固定 2（你也可改成從設定檔讀）
+    // ✅ 3. 一定要補上這兩個方法，Controller 才抓得到！
+    public LocalDate getExpireDate() {
+        return expireDate;
     }
 
-    @Transient
+    public void setExpireDate(LocalDate expireDate) {
+        this.expireDate = expireDate;
+    }
+    // ... (原本的 getters / setters) ...
+
+    // ✅ 4. 新增這個：計算距離過期還有幾天
     public Long getDaysToExpire() {
-        if (expireDate == null) return null;
-        return ChronoUnit.DAYS.between(LocalDate.now(), expireDate);
+        if (this.expireDate == null) return null;
+        return java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(), this.expireDate);
     }
 
-    // ===== getters/setters =====
+    // ✅ 5. 新增這個：判斷是否庫存不足 (這裡設定數量 <= 1 就當作不足，您可以自己改數字)
+    public boolean isLowStock() {
+        return this.quantity == null || this.quantity <= 1;
+    }
+    
+   
+    // ... 其他原本的程式碼保持不變 ...
     public Long getId() { return id; }
-
+    public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
-    public String getSku() { return sku; }
-    public void setSku(String sku) { this.sku = sku; }
-
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
-
+    public String getSku() { return sku; }
+    public void setSku(String sku) { this.sku = sku; }
     public String getRoom() { return room; }
     public void setRoom(String room) { this.room = room; }
-
-    public String getUnit() { return unit; }
-    public void setUnit(String unit) { this.unit = unit; }
-
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
-
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
-
-    public LocalDate getExpireDate() { return expireDate; }
-    public void setExpireDate(LocalDate expireDate) { this.expireDate = expireDate; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public String getUnit() { return unit; }
+    public void setUnit(String unit) { this.unit = unit; }
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
 }

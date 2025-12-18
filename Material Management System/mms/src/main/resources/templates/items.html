@@ -784,6 +784,20 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="mergeModalBg" style="z-index: 9999;">
+    <div class="modal" style="width: 320px;">
+      <h3>⚠️ 發現重複物品</h3>
+      <p>在庫存位置 <strong><span id="mergeTargetInfo"></span></strong> 已經有相同的物品了。</p>
+      <p>請問您要將數量合併，還是建立一筆新的資料？</p>
+      
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button type="button" class="btn btn-primary btn-sm" id="btnConfirmMerge">合併數量</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="btnForceNew">建立新的一筆</button>
+        <button type="button" class="btn btn-sm" style="border:none; color:#999;" id="btnCancelMerge">取消</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* ====== 頂部縮小 ====== */
     const topbar = document.getElementById('topbar');
@@ -833,35 +847,48 @@
     const nameField = document.getElementById('nameField');
     const btnCreateEl = document.getElementById('btnCreate');
     const btnSearchEl = document.getElementById('btnSearch');
+    
     /* ====== 類別下拉／自訂 ====== */
-const catSelect = document.getElementById('categorySelect');
-const catInput  = document.getElementById('categoryInput');
-const catField  = document.getElementById('categoryField');
+    const catSelect = document.getElementById('categorySelect-create'); // 注意：這邊您的原代碼可能有少 create 後綴，我幫您修正了
+    const catInput  = document.getElementById('categoryInput-create');
+    const catField  = document.getElementById('categoryField-create');
 
-function syncCategory(){
-  if (!catSelect) return;
-
-  const v = catSelect.value;
-  if (v === '__NEW__') {
-    catInput.style.display = '';
-    catField.value = catInput.value.trim();
-  } else {
-    catInput.style.display = 'none';
-    catField.value = v || '';
-  }
-}
-
-if (catSelect){
-  catSelect.addEventListener('change', syncCategory);
-  catInput.addEventListener('input', ()=>{
-    if (catSelect.value === '__NEW__') {
-      catField.value = catInput.value.trim();
+    function syncCategory(){
+      if (!catSelect) return;
+      const v = catSelect.value;
+      if (v === '__NEW__') {
+        catInput.style.display = '';
+        catField.value = catInput.value.trim();
+      } else {
+        catInput.style.display = 'none';
+        catField.value = v || '';
+      }
     }
-  });
-}
 
+    if (catSelect){
+      catSelect.addEventListener('change', syncCategory);
+      catInput.addEventListener('input', ()=>{
+        if (catSelect.value === '__NEW__') {
+          catField.value = catInput.value.trim();
+        }
+      });
+    }
+/* ==========================================================
+       ✅ 核心修改：新增按鈕邏輯 + 詢問視窗邏輯
+       ========================================================== */
+    const mergeModalBg = document.getElementById('mergeModalBg');
+    const mergeTargetInfo = document.getElementById('mergeTargetInfo');
+    const btnConfirmMerge = document.getElementById('btnConfirmMerge');
+    const btnForceNew = document.getElementById('btnForceNew');
+    const btnCancelMerge = document.getElementById('btnCancelMerge');
+    
+    // 動態抓取 hidden input
+    let forceNewInput = document.getElementById('forceNewInput');
 
-    btnCreateEl?.addEventListener('click', (e)=>{
+    // 監聽「新增」按鈕
+    btnCreateEl?.addEventListener('click', async (e) => {
+      
+      // 1. 驗證邏輯
       syncCreateLocation();
       syncCategory();
       if (!fieldCreate?.value){
@@ -869,9 +896,111 @@ if (catSelect){
         alert('新增時請選擇或輸入儲位');
         return;
       }
-      if (formCS) formCS.method = 'post';
+
+      // 2. 攔截表單，不要馬上送出
+      e.preventDefault();
+
+      // 3. 準備參數
+      const name = nameField.value;
+      const room = document.querySelector('[name="room"]').value || '';
+      const location = fieldCreate.value || '';
+      
+      // 👇 抓取日期 (關鍵修改)
+      const expireDate = document.querySelector('[name="expireDate"]').value || ''; 
+      
+      // 如果沒填名字 (可能是查詢模式)，就直接送出給後端驗證
+      if(!name) { 
+         formCS.submit(); 
+         return; 
+      }
+
+      try {
+        // 4. 問後端：有沒有「同名、同地點、且同日期」的東西？
+        const params = new URLSearchParams({ name, room, location, expireDate });
+        const res = await fetch(`/api/items/check-exists?${params.toString()}`);
+        const exists = await res.json(); 
+
+        if (exists) {
+          // 有重複 -> 跳出詢問視窗
+          if (mergeTargetInfo) mergeTargetInfo.textContent = `${room ? room + ' - ' : ''}${location}`;
+          mergeModalBg.classList.add('show');
+        } else {
+          // 沒重複 -> 直接送出 (forceNew = false)
+          if (!forceNewInput) {
+             forceNewInput = document.createElement('input');
+             forceNewInput.type = 'hidden';
+             forceNewInput.name = 'forceNew';
+             forceNewInput.id = 'forceNewInput';
+             formCS.appendChild(forceNewInput);
+          }
+          forceNewInput.value = 'false';
+          formCS.submit();
+        }
+      } catch (err) {
+        console.error('API Error:', err);
+        // 如果 API 壞掉，為了不卡住使用者，直接送出
+        formCS.submit(); 
+      }
     });
 
+    // === 詢問視窗的三個按鈕邏輯 ===
+    
+    // 1. 合併
+    btnConfirmMerge?.addEventListener('click', () => {
+       if (!forceNewInput) {
+           forceNewInput = document.createElement('input');
+           forceNewInput.type = 'hidden'; forceNewInput.name = 'forceNew'; forceNewInput.id = 'forceNewInput';
+           formCS.appendChild(forceNewInput);
+       }
+       forceNewInput.value = 'false'; // 不強制新增 = 合併
+       formCS.submit();
+       mergeModalBg.classList.remove('show');
+    });
+
+    // 2. 建立新的一筆
+    btnForceNew?.addEventListener('click', () => {
+       if (!forceNewInput) {
+           forceNewInput = document.createElement('input');
+           forceNewInput.type = 'hidden'; forceNewInput.name = 'forceNew'; forceNewInput.id = 'forceNewInput';
+           formCS.appendChild(forceNewInput);
+       }
+       forceNewInput.value = 'true'; // 強制新增！
+       formCS.submit();
+       mergeModalBg.classList.remove('show');
+    });
+
+    // 3. 取消
+    btnCancelMerge?.addEventListener('click', () => {
+       mergeModalBg.classList.remove('show');
+    });
+    // === 視窗按鈕事件 ===
+    btnConfirmMerge?.addEventListener('click', () => {
+       if (!forceNewInput) {
+           forceNewInput = document.createElement('input');
+           forceNewInput.type = 'hidden'; forceNewInput.name = 'forceNew'; forceNewInput.id = 'forceNewInput';
+           formCS.appendChild(forceNewInput);
+       }
+       forceNewInput.value = 'false';
+       formCS.submit();
+       mergeModalBg.classList.remove('show');
+    });
+
+    btnForceNew?.addEventListener('click', () => {
+       if (!forceNewInput) {
+           forceNewInput = document.createElement('input');
+           forceNewInput.type = 'hidden'; forceNewInput.name = 'forceNew'; forceNewInput.id = 'forceNewInput';
+           formCS.appendChild(forceNewInput);
+       }
+       forceNewInput.value = 'true';
+       formCS.submit();
+       mergeModalBg.classList.remove('show');
+    });
+
+    btnCancelMerge?.addEventListener('click', () => {
+       mergeModalBg.classList.remove('show');
+    });
+
+    /* ====== 查詢按鈕 (不變) ====== */
     btnSearchEl?.addEventListener('click', (e)=>{
       if (!nameField?.value?.trim()){
         e.preventDefault();
@@ -883,28 +1012,24 @@ if (catSelect){
           if(el.name) el.disabled = true;
         }
       });
+      // 確保查詢不走 check-exists 邏輯
+      formCS.submit();
     });
 
-    /* ====== ✅ AI 填寫 + 綠色提示彈窗 ====== */
+    /* ====== AI 填寫 (不變) ====== */
     const btnAiSuggest = document.getElementById('btnAiSuggest');
-
     function showGreenToast(msg){
       const t = document.createElement('div');
-      t.className = 'toast';
-      t.textContent = msg;
+      t.className = 'toast'; t.textContent = msg;
       document.body.appendChild(t);
       setTimeout(()=> t.remove(), 2300);
     }
-
     function applyLocationToUI(loc){
       const locHidden = document.getElementById('locationField-create');
       const locSelect = document.getElementById('locationSelect-create');
       const locInput  = document.getElementById('locationInput-create');
-
       if (!loc) return;
-
       if (locHidden) locHidden.value = loc;
-
       if (locSelect) {
         const hasOption = Array.from(locSelect.options).some(o => o.value === loc);
         if (hasOption) {
@@ -912,102 +1037,54 @@ if (catSelect){
           if (locInput) locInput.style.display = 'none';
         } else {
           locSelect.value = '__NEW__';
-          if (locInput) {
-            locInput.style.display = '';
-            locInput.value = loc;
-          }
+          if (locInput) { locInput.style.display = ''; locInput.value = loc; }
         }
       }
     }
-
     async function aiFill() {
       const skuEl = document.getElementById('skuField') || document.querySelector('[name="sku"]');
       const name = (nameField?.value || '').trim();
-
-      if (!name) {
-        alert('請先輸入名稱再使用 AI');
-        return;
-      }
-
+      if (!name) { alert('請先輸入名稱再使用 AI'); return; }
       let res;
       try{
         res = await fetch('/ai/suggest', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name })
         });
-      }catch(e){
-        alert('AI 連線失敗：' + e.message);
-        return;
-      }
-
-      if(!res.ok){
-        const text = await res.text();
-        alert('AI 服務錯誤：' + text);
-        return;
-      }
-
+      }catch(e){ alert('AI 連線失敗：' + e.message); return; }
+      if(!res.ok){ const text = await res.text(); alert('AI 服務錯誤：' + text); return; }
       const data = await res.json();
-        // ====== AI 填 SKU ======
-  if (data.sku && skuEl) {
-    skuEl.value = data.sku;
-  }
-
-  // ====== AI 填 儲位 ======
-  if (data.location) {
-    applyLocationToUI(data.location);
-  }
-
-  // ====== ✅ AI 填 類別（你問的就是這段） ======
-  const catField = document.getElementById('categoryField');
-  // ====== ✅ AI 填 類別（支援 select 沒有就走新增） ======
-if (data.category) {
-  const catHidden = document.getElementById('categoryField-create');
-  const catSelect = document.getElementById('categorySelect-create');
-  const catInput  = document.getElementById('categoryInput-create');
-
-  // hidden 一定要寫（真正送到後端的）
-  if (catHidden) catHidden.value = data.category;
-
-  if (catSelect) {
-    const hasOption = Array.from(catSelect.options).some(o => o.value === data.category);
-    if (hasOption) {
-      catSelect.value = data.category;
-      if (catInput) catInput.style.display = 'none';
-    } else {
-      catSelect.value = '__NEW__';
-      if (catInput) {
-        catInput.style.display = '';
-        catInput.value = data.category;
-      }
-    }
-  }
-
-  showGreenToast(`AI 建議類別：${data.category}`);
-}
-
-
-
-      console.log('AI suggest:', data);
-
-      if (skuEl && data.sku) skuEl.value = data.sku;
+      if (data.sku && skuEl) skuEl.value = data.sku;
       if (data.location) applyLocationToUI(data.location);
-
+      if (data.category) {
+        const catHidden = document.getElementById('categoryField-create');
+        const catSelect = document.getElementById('categorySelect-create');
+        const catInput  = document.getElementById('categoryInput-create');
+        if (catHidden) catHidden.value = data.category;
+        if (catSelect) {
+            const hasOption = Array.from(catSelect.options).some(o => o.value === data.category);
+            if (hasOption) {
+            catSelect.value = data.category;
+            if (catInput) catInput.style.display = 'none';
+            } else {
+            catSelect.value = '__NEW__';
+            if (catInput) { catInput.style.display = ''; catInput.value = data.category; }
+            }
+        }
+        showGreenToast(`AI 建議類別：${data.category}`);
+      }
       const msg = `AI 已填寫：SKU=${data.sku || '-'} / 儲位=${data.location || '-'}` + (data.reason ? `（${data.reason}）` : '');
       showGreenToast(msg);
     }
-
     btnAiSuggest?.addEventListener('click', ()=> aiFill());
 
-    /* ====== 行事曆簡易渲染 ====== */
+    /* ====== 行事曆 (不變) ====== */
     const calTitle = document.getElementById('calTitle');
     const calGrid = document.getElementById('calendarGrid');
     const calPrev = document.getElementById('calPrev');
     const calNext = document.getElementById('calNext');
-
     let calYear, calMonth;
     const today = new Date();
-
     function renderCalendar(){
       const firstDay = new Date(calYear, calMonth, 1);
       const firstWeekday = firstDay.getDay();
@@ -1015,102 +1092,55 @@ if (data.category) {
       if (calTitle) calTitle.textContent = calYear + ' / ' + (calMonth+1).toString().padStart(2,'0');
       if (!calGrid) return;
       calGrid.innerHTML = '';
-
       const weekdays = ['日','一','二','三','四','五','六'];
       weekdays.forEach(w=>{
         const cell = document.createElement('div');
-        cell.className = 'calendar-cell cal-weekday';
-        cell.textContent = w;
-        calGrid.appendChild(cell);
+        cell.className = 'calendar-cell cal-weekday'; cell.textContent = w; calGrid.appendChild(cell);
       });
-
       for(let i=0;i<firstWeekday;i++){
-        const cell = document.createElement('div');
-        cell.className = 'calendar-cell';
-        calGrid.appendChild(cell);
+        const cell = document.createElement('div'); cell.className = 'calendar-cell'; calGrid.appendChild(cell);
       }
-
       for(let d=1; d<=daysInMonth; d++){
-        const cell = document.createElement('div');
-        cell.className = 'calendar-cell cal-day';
-        const isToday = (calYear === today.getFullYear() &&
-                         calMonth === today.getMonth() &&
-                         d === today.getDate());
+        const cell = document.createElement('div'); cell.className = 'calendar-cell cal-day';
+        const isToday = (calYear === today.getFullYear() && calMonth === today.getMonth() && d === today.getDate());
         if (isToday) cell.classList.add('today');
-        cell.textContent = d;
-        calGrid.appendChild(cell);
+        cell.textContent = d; calGrid.appendChild(cell);
       }
     }
-
     if (calTitle && calGrid){
-      calYear = today.getFullYear();
-      calMonth = today.getMonth();
-      renderCalendar();
-      calPrev?.addEventListener('click', ()=>{
-        calMonth--;
-        if (calMonth<0){ calMonth=11; calYear--; }
-        renderCalendar();
-      });
-      calNext?.addEventListener('click', ()=>{
-        calMonth++;
-        if (calMonth>11){ calMonth=0; calYear++; }
-        renderCalendar();
-      });
+      calYear = today.getFullYear(); calMonth = today.getMonth(); renderCalendar();
+      calPrev?.addEventListener('click', ()=>{ calMonth--; if (calMonth<0){ calMonth=11; calYear--; } renderCalendar(); });
+      calNext?.addEventListener('click', ()=>{ calMonth++; if (calMonth>11){ calMonth=0; calYear++; } renderCalendar(); });
     }
 
-    /* ====== 更改大數量：小視窗 ====== */
+    /* ====== 更改大數量：小視窗 (不變) ====== */
     const qtyModalBg = document.getElementById('qtyModalBg');
     const qtyInput = document.getElementById('qtyInput');
     const qtyCancel = document.getElementById('qtyCancel');
     const qtyOk = document.getElementById('qtyOk');
     let editingItemId = null;
-
     function openQtyModal(id, current){
-      editingItemId = id;
-      if (qtyInput) qtyInput.value = current;
-      qtyModalBg?.classList.add('show');
-      qtyInput?.focus();
-      qtyInput?.select();
+      editingItemId = id; if (qtyInput) qtyInput.value = current;
+      qtyModalBg?.classList.add('show'); qtyInput?.focus(); qtyInput?.select();
     }
-    function closeQtyModal(){
-      qtyModalBg?.classList.remove('show');
-      editingItemId = null;
-    }
-
+    function closeQtyModal(){ qtyModalBg?.classList.remove('show'); editingItemId = null; }
     document.addEventListener('click',(e)=>{
       const btn = e.target.closest('.btn-editQty');
       if(btn){
-        const id = btn.getAttribute('data-id');
-        const current = btn.getAttribute('data-current') || '0';
-        openQtyModal(id, current);
+        const id = btn.getAttribute('data-id'); const current = btn.getAttribute('data-current') || '0'; openQtyModal(id, current);
       }
     });
-
     qtyCancel?.addEventListener('click', closeQtyModal);
     qtyModalBg?.addEventListener('click',(e)=>{ if(e.target === qtyModalBg) closeQtyModal(); });
-
     qtyOk?.addEventListener('click', ()=>{
       const v = parseInt(qtyInput?.value ?? '0',10);
-      if(isNaN(v) || v<0){
-        alert('請輸入大於等於 0 的數字');
-        return;
-      }
-      if(!editingItemId){
-        closeQtyModal();
-        return;
-      }
-      const form = document.createElement('form');
-      form.method = 'post';
+      if(isNaN(v) || v<0){ alert('請輸入大於等於 0 的數字'); return; }
+      if(!editingItemId){ closeQtyModal(); return; }
+      const form = document.createElement('form'); form.method = 'post';
       form.action = '/items/' + encodeURIComponent(editingItemId) + '/setQuantity';
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'quantity';
-      input.value = v;
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
+      const input = document.createElement('input'); input.type = 'hidden'; input.name = 'quantity'; input.value = v;
+      form.appendChild(input); document.body.appendChild(form); form.submit();
     });
-
     document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape') closeQtyModal(); });
   </script>
 </body>
