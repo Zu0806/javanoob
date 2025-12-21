@@ -490,7 +490,7 @@
             <label>名稱（查詢時必填）</label>
             <div class="ai-input-wrap">
               <input th:field="*{name}" id="nameField" placeholder="螺絲 M3 / 牛奶 / 洗衣精"/>
-              <button type="button" class="btn btn-ghost btn-sm btn-ai" id="btnAiSuggest">AI 填寫</button>
+              <button type="button" class="btn btn-ghost btn-sm btn-ai" id="btnAiSuggest">自動填寫</button>
             </div>
           </div>
 
@@ -1044,15 +1044,15 @@
     async function aiFill() {
       const skuEl = document.getElementById('skuField') || document.querySelector('[name="sku"]');
       const name = (nameField?.value || '').trim();
-      if (!name) { alert('請先輸入名稱再使用 AI'); return; }
+      if (!name) { alert('請先輸入名稱再使用自動填寫'); return; }
       let res;
       try{
         res = await fetch('/ai/suggest', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name })
         });
-      }catch(e){ alert('AI 連線失敗：' + e.message); return; }
-      if(!res.ok){ const text = await res.text(); alert('AI 服務錯誤：' + text); return; }
+      }catch(e){ alert('自動填寫連線失敗：' + e.message); return; }
+      if(!res.ok){ const text = await res.text(); alert('服務錯誤：' + text); return; }
       const data = await res.json();
       if (data.sku && skuEl) skuEl.value = data.sku;
       if (data.location) applyLocationToUI(data.location);
@@ -1071,9 +1071,9 @@
             if (catInput) { catInput.style.display = ''; catInput.value = data.category; }
             }
         }
-        showGreenToast(`AI 建議類別：${data.category}`);
+        showGreenToast(`建議類別：${data.category}`);
       }
-      const msg = `AI 已填寫：SKU=${data.sku || '-'} / 儲位=${data.location || '-'}` + (data.reason ? `（${data.reason}）` : '');
+      const msg = `已填寫：SKU=${data.sku || '-'} / 儲位=${data.location || '-'}` + (data.reason ? `（${data.reason}）` : '');
       showGreenToast(msg);
     }
     btnAiSuggest?.addEventListener('click', ()=> aiFill());
