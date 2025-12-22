@@ -514,13 +514,7 @@
 </div>
 
 
-          <div class="field">
-            <label>房間</label>
-            <select th:field="*{room}">
-              <option value="">選擇房間（查詢可用）</option>
-              <option th:each="room : ${rooms}" th:value="${room}" th:text="${room}">客廳</option>
-            </select>
-          </div>
+          
 
           <div class="field">
             <label>單位</label>
@@ -574,14 +568,14 @@
           <th>ID</th>
           <th>名稱 / 類別</th>
           <th>SKU</th>
-          <th>房間 / 儲位</th>
+          <th>儲位</th>
           <th>單位 / 數量</th>
           <th>有效期限</th>
           <th>操作</th>
         </tr>
         </thead>
         <tbody>
-        <!-- ✅ 不再用 it.lowStock / it.daysToExpire（避免 getter 炸掉） -->
+        
         <tr th:each="it : ${items}"
             th:classappend="${it.quantity != null and it.quantity <= 0} ? 'low-stock-row' : ''">
           <td th:text="${it.id}">1</td>
@@ -595,9 +589,7 @@
           <td th:text="${it.sku != null and !#strings.isEmpty(it.sku) ? it.sku : '-'}">SCREW-M3</td>
 
           <td>
-            <div style="font-size:11px; color:var(--muted);">
-              房間：<span th:text="${it.room != null and !#strings.isEmpty(it.room) ? it.room : '-'}">客廳</span>
-            </div>
+           
             <div>儲位：<strong th:text="${it.location != null and !#strings.isEmpty(it.location) ? it.location : 'UNASSIGNED'}">A1-3</strong></div>
           </td>
 

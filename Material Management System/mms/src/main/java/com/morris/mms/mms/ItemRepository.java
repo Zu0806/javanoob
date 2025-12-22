@@ -6,20 +6,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
-    // ✅ 2. 這裡一定要是 List，不能是 Optional，不然 Controller 會報錯！
-    List<Item> findByNameAndRoomAndLocation(String name, String room, String location);
+    List<Item> findByNameAndLocation(String name, String location);
 
-    // ... 其他查詢方法 ...
+
+
     List<Item> findByLocation(String location);
     List<Item> findByCategory(String category);
 
     @Query("select distinct i.category from Item i where i.category is not null and i.category<>'' order by i.category")
     List<String> distinctCategories();
 
-    @Query("select distinct i.room from Item i where i.room is not null and i.room<>'' order by i.room")
-    List<String> distinctRooms();
+    /*@Query("select distinct i.room from Item i where i.room is not null and i.room<>'' order by i.room")
+    List<String> distinctRooms();*/
 
     @Query("select distinct i.location from Item i where i.location is not null and i.location<>'' order by i.location")
     List<String> distinctLocations();
