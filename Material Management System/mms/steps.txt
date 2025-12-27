@@ -10,7 +10,7 @@ dir
 .\mvnw.cmd spring-boot:run
 http://localhost:9090/items
 
-
+we need node js 24.12
 
 
 solve for java version error (we need java 21)
