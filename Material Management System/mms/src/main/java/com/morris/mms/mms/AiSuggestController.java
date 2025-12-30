@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/ai")
+@RequestMapping("/ai1")
 public class AiSuggestController {
 
     private final AiSuggestService service;
