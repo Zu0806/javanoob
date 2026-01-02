@@ -42,14 +42,19 @@
       <div>
         <div class="panel-title">留言 / 交代事項</div>
         <div class="panel-sub">
-          首頁僅顯示未完成事項，完成可勾選。總覽頁面會顯示全部（含已完成）。
+          首頁僅顯示未完成事項，完成可勾選。總頁面會顯示全部（含已完成）。
         </div>
       </div>
 
-      <!-- 你也可以改成 router-link，如果你有 /notes 頁 -->
-      <a class="btn btn-outline btn-sm" href="#" @click.prevent="goNotes">
-        查看全部事項總覽
-      </a>
+      <a
+  href="/notes"
+  target="_blank"
+  rel="noopener"
+  class="btn btn-outline btn-notes"
+>
+  查看全部事項總覽 →
+</a>
+
     </div>
 
     <form class="note-add" @submit.prevent="createNote">
@@ -115,6 +120,7 @@
 
 <!-- (下面接你原本 Items.vue 的新增/查詢卡 + table，完全不動) -->
 <!-- ===== /Dashboard Top ===== -->
+<div ref="addRef" class="card add-card">
 
   <div class="container">
     <!-- ================== 新增 / 查詢 ================== -->
@@ -209,75 +215,21 @@
         <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
       </form>
     </section>
-
-<!-- ✅ 記事區塊（Items 頁內嵌 Notes） -->
-
-<section class="card" style="margin-top:14px;">
-  <div class="card-title">📝 家庭記事</div>
-  <div class="card-sub">快速新增與查看家庭成員的留言與代辦事項</div>
-
-  <!-- 新增記事 -->
-  <form
-    @submit.prevent="createNote"
-    style="display:flex; gap:8px; margin:14px 0 18px;"
-  >
-    <input
-      v-model.trim="noteText"
-      type="text"
-      required
-      placeholder="輸入新的記事..."
-      style="flex:1; padding:10px 14px; border:1px solid var(--border); border-radius:12px;"
-    />
-    <button class="btn btn-primary" type="submit">
-      新增
-    </button>
-  </form>
-
-  <!-- 記事列表 -->
-  <table>
-    <thead>
-      <tr>
-        <th width="60%">內容</th>
-        <th width="20%">時間</th>
-        <th width="20%">狀態</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="n in notes" :key="n.id" :class="{ 'done-row': n.done }">
-        <td>{{ n.text }}</td>
-        <td style="font-size:12px; color:var(--muted);">
-          {{ formatDateTime(n.createdAt) }}
-        </td>
-        <td>
-          <form class="inline" @submit.prevent="toggleNote(n.id)">
-            <button
-              class="btn btn-sm"
-              :style="n.done
-                ? 'background:#e2e8f0; color:#64748b;'
-                : 'background:#dcfce7; color:#166534; border:1px solid #bbf7d0;'"
-            >
-              {{ n.done ? '復原' : '完成' }}
-            </button>
-          </form>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div
-    v-if="!notes.length"
-    style="text-align:center; padding:18px; color:var(--muted);"
-  >
-    目前沒有任何記事
-  </div>
-</section>
+  <!-- 新增 / 查詢物品整塊 -->
+</div>
 
 
 
+
+
+
+
+  <!-- table / 物料清單 -->
 
 
     <!-- ================== 物料清單 ================== -->
     <section class="section" id="section-list">
+      <div ref="listRef" class="card list-card">
       <div class="section-header">
         <div>
           <div class="section-title">物料清單</div>
@@ -352,6 +304,7 @@
       <p v-if="items.length === 0" style="font-size: 13px; color: var(--muted); margin-top: 10px;">
         目前沒有任何物品 ✅
       </p>
+      </div>
     </section>
 
     <!-- ================== 過期/即將到期 ================== -->
