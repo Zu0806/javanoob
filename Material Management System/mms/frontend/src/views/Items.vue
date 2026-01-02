@@ -1,4 +1,121 @@
+
+
 <template>
+  <!-- ===== Dashboard Top (插在 Items.vue 最上面) ===== -->
+<div class="dash-hero">
+  <h1 class="dash-title">歡迎回來，開始整理你的家庭物資吧。</h1>
+  <p class="dash-sub">
+    登入後首頁提供新增、查詢、即將過期與數量不足的快速入口；左上角三條線可依地點或物品類別快速跳轉。
+  </p>
+</div>
+
+<div class="dash-cards">
+  <a class="dash-card" href="#" @click.prevent="scrollToAdd">
+    <div class="card-h">新增物品</div>
+    <div class="card-p">輸入名稱、房間、地點、數量與有效期限，快速建立庫存。</div>
+    <div class="card-link">前往新增區塊</div>
+  </a>
+
+  <a class="dash-card" href="#" @click.prevent="scrollToAdd">
+    <div class="card-h">查詢物品</div>
+    <div class="card-p">可依名稱、SKU、房間、地點或類別查詢目前的存量。</div>
+    <div class="card-link">支援房間查詢</div>
+  </a>
+
+  <a class="dash-card" href="#" @click.prevent="scrollToList">
+    <div class="card-h">過期查詢</div>
+    <div class="card-p">查看已過期與 7 / 14 天內即將到期的物品。</div>
+    <div class="card-link">到期提醒</div>
+  </a>
+
+  <a class="dash-card" href="#" @click.prevent="scrollToList">
+    <div class="card-h">數量不足</div>
+    <div class="card-p">檢視庫存過少的物品，避免臨時缺貨。</div>
+    <div class="card-link">低庫存提醒</div>
+  </a>
+</div>
+
+<div class="dash-row">
+  <!-- Notes -->
+  <section class="dash-panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">留言 / 交代事項</div>
+        <div class="panel-sub">
+          首頁僅顯示未完成事項，完成可勾選。總覽頁面會顯示全部（含已完成）。
+        </div>
+      </div>
+
+      <!-- 你也可以改成 router-link，如果你有 /notes 頁 -->
+      <a class="btn btn-outline btn-sm" href="#" @click.prevent="goNotes">
+        查看全部事項總覽
+      </a>
+    </div>
+
+    <form class="note-add" @submit.prevent="createNote">
+      <input
+        v-model.trim="noteText"
+        class="input"
+        placeholder="輸入要交代的事情，例如：週五前確認冰箱雞蛋數量"
+        required
+      />
+      <button class="btn btn-primary" type="submit">新增</button>
+    </form>
+
+    <div class="note-list">
+      <div v-for="n in notesPreview" :key="n.id" class="note-item">
+        <label class="note-left">
+          <input type="checkbox" :checked="n.done" @change="toggleNote(n.id)" />
+          <span :class="{ 'note-done': n.done }">{{ n.text }}</span>
+        </label>
+
+        <div class="note-right">
+          <span class="note-time">{{ formatDateTime(n.createdAt) }}</span>
+          <span class="note-author">{{ n.authorName || "--" }}</span>
+        </div>
+      </div>
+
+      <div v-if="!notesPreview.length" class="empty-hint">
+        目前沒有任何未完成記事
+      </div>
+    </div>
+  </section>
+
+  <!-- Calendar -->
+  <section class="dash-panel">
+    <div class="panel-head">
+      <div class="panel-title">家庭行事曆</div>
+
+      <div class="cal-nav">
+        <button class="icon-btn" @click="prevMonth">‹</button>
+        <div class="cal-title">{{ calTitle }}</div>
+        <button class="icon-btn" @click="nextMonth">›</button>
+      </div>
+    </div>
+
+    <div class="cal-grid">
+      <div class="cal-week">
+        <div class="cal-w">日</div><div class="cal-w">一</div><div class="cal-w">二</div>
+        <div class="cal-w">三</div><div class="cal-w">四</div><div class="cal-w">五</div><div class="cal-w">六</div>
+      </div>
+
+      <div class="cal-days">
+        <div
+          v-for="(d, idx) in calendarCells"
+          :key="idx"
+          class="cal-cell"
+          :class="{ 'cal-muted': !d.inMonth, 'cal-today': d.isToday }"
+        >
+          {{ d.day }}
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- (下面接你原本 Items.vue 的新增/查詢卡 + table，完全不動) -->
+<!-- ===== /Dashboard Top ===== -->
+
   <div class="container">
     <!-- ================== 新增 / 查詢 ================== -->
     <section class="section" id="section-create">
@@ -93,6 +210,72 @@
       </form>
     </section>
 
+<!-- ✅ 記事區塊（Items 頁內嵌 Notes） -->
+
+<section class="card" style="margin-top:14px;">
+  <div class="card-title">📝 家庭記事</div>
+  <div class="card-sub">快速新增與查看家庭成員的留言與代辦事項</div>
+
+  <!-- 新增記事 -->
+  <form
+    @submit.prevent="createNote"
+    style="display:flex; gap:8px; margin:14px 0 18px;"
+  >
+    <input
+      v-model.trim="noteText"
+      type="text"
+      required
+      placeholder="輸入新的記事..."
+      style="flex:1; padding:10px 14px; border:1px solid var(--border); border-radius:12px;"
+    />
+    <button class="btn btn-primary" type="submit">
+      新增
+    </button>
+  </form>
+
+  <!-- 記事列表 -->
+  <table>
+    <thead>
+      <tr>
+        <th width="60%">內容</th>
+        <th width="20%">時間</th>
+        <th width="20%">狀態</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="n in notes" :key="n.id" :class="{ 'done-row': n.done }">
+        <td>{{ n.text }}</td>
+        <td style="font-size:12px; color:var(--muted);">
+          {{ formatDateTime(n.createdAt) }}
+        </td>
+        <td>
+          <form class="inline" @submit.prevent="toggleNote(n.id)">
+            <button
+              class="btn btn-sm"
+              :style="n.done
+                ? 'background:#e2e8f0; color:#64748b;'
+                : 'background:#dcfce7; color:#166534; border:1px solid #bbf7d0;'"
+            >
+              {{ n.done ? '復原' : '完成' }}
+            </button>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div
+    v-if="!notes.length"
+    style="text-align:center; padding:18px; color:var(--muted);"
+  >
+    目前沒有任何記事
+  </div>
+</section>
+
+
+
+
+
     <!-- ================== 物料清單 ================== -->
     <section class="section" id="section-list">
       <div class="section-header">
@@ -117,68 +300,53 @@
         </thead>
 
         <tbody>
-          <tr
-            v-for="it in items"
-            :key="it.id"
-            :class="(it.quantity ?? 0) <= 0 ? 'low-stock-row' : ''"
-          >
-            <td>{{ it.id }}</td>
+  <tr v-for="it in items" :key="it.id">
+    <td>{{ it.id }}</td>
 
-            <td>
-              <div style="font-weight: 600;">{{ it.name }}</div>
-              <div style="font-size: 11px; color: var(--muted);">
-                {{ it.category && it.category.trim() ? it.category : '-' }}
-              </div>
-            </td>
+    <td>
+      <div>{{ it.name || '-' }}</div>
+      <div style="color:var(--muted); font-size:12px;">
+        {{ it.category || '-' }}
+      </div>
+    </td>
 
-            <td>{{ it.sku && it.sku.trim() ? it.sku : '-' }}</td>
+    <td>{{ it.sku || '-' }}</td>
+    <td>{{ it.room || '-' }}</td>
+    <td>{{ it.location || '-' }}</td>
 
-            <td>{{ it.room && it.room.trim() ? it.room : '-' }}</td>
+    <td>
+      {{ it.unit || '-' }} × {{ it.quantity ?? 0 }}
+    </td>
 
-            <td>
-              <strong>{{ it.location && it.location.trim() ? it.location : 'UNASSIGNED' }}</strong>
-            </td>
+    <td>
+      {{ it.expireDate || '-' }}
+    </td>
 
-            <td>
-              <div>
-                <span>{{ it.unit && it.unit.trim() ? it.unit : '-' }}</span>
-                ×
-                <span style="font-weight: 700;">{{ it.quantity ?? 0 }}</span>
-              </div>
+    <!-- ✅ 關鍵：操作欄 -->
+    <td class="actions">
+      <form class="inline" @submit.prevent="adjust(it.id, +1)">
+        <button class="btn btn-ghost btn-sm" type="submit">+1</button>
+      </form>
 
-              <div v-if="(it.quantity ?? 0) <= 0" class="badge badge-low">數量不足</div>
-            </td>
+      <form class="inline" @submit.prevent="adjust(it.id, -1)">
+        <button class="btn btn-ghost btn-sm" type="submit">-1</button>
+      </form>
 
-            <td>
-              <div v-if="it.expireDate">{{ fmtDate(it.expireDate) }}</div>
-              <div v-else style="color: var(--muted);">-</div>
+      <button
+        class="btn btn-ghost btn-sm"
+        type="button"
+        @click="openEditQty(it)"
+      >
+        更改數量
+      </button>
 
-              <div v-if="daysToExpire(it) !== null">
-                <span class="badge badge-exp7" v-if="daysToExpire(it) <= 7 && daysToExpire(it) >= 0">
-                  7 天內到期
-                </span>
-                <span class="badge badge-exp14" v-else-if="daysToExpire(it) <= 14 && daysToExpire(it) > 7">
-                  14 天內到期
-                </span>
-              </div>
-            </td>
-
-            <td>
-              <div class="inline-actions">
-                <button class="btn btn-ghost btn-sm" type="button" @click="adjust(it.id, +1)">+1</button>
-                <button class="btn btn-ghost btn-sm" type="button" @click="adjust(it.id, -1)">-1</button>
-
-                <button class="btn btn-ghost btn-sm" type="button" @click="openQtyModal(it)">
-                  更改數量
-                </button>
-
-                <button class="btn btn-ghost btn-sm" type="button" @click="remove(it.id)">
-                  刪除
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
+      <form class="inline" @submit.prevent="remove(it.id)">
+        <button class="btn btn-ghost btn-sm" type="submit">刪除</button>
+      </form>
+    </td>
+  </tr>
+</tbody>
+    
       </table>
 
       <p v-if="items.length === 0" style="font-size: 13px; color: var(--muted); margin-top: 10px;">
@@ -308,15 +476,10 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import axios from "axios";
 
-/**
- * ✅ 你後端已確認（9090）：
- * - GET    /api/v2/items
- * - POST   /api/v2/items?forceNew=
- * - POST   /api/v2/items/{id}/adjust?delta=
- * - PUT    /api/v2/items/{id}/quantity   body {quantity}
- * - DELETE /api/v2/items/{id}
- * - GET    /api/v2/items/meta   -> {categories, locations}
- */
+
+
+
+
 
 const items = ref([]);
 
@@ -634,7 +797,106 @@ async function onSearchClick() {
 onMounted(async () => {
   await fetchMeta();
   await fetchItems();
+  await loadNotes();
 });
+
+
+const notes = ref([]);
+const noteText = ref("");
+
+async function loadNotes() {
+  const res = await axios.get("/api/v2/notes");
+  notes.value = Array.isArray(res.data) ? res.data : [];
+}
+
+async function createNote() {
+  const t = noteText.value?.trim();
+  if (!t) return;
+  await axios.post("/api/v2/notes", { text: t });
+  noteText.value = "";
+  await loadNotes();
+}
+
+async function toggleNote(id) {
+  await axios.post(`/api/v2/notes/${id}/toggle`);
+  await loadNotes();
+}
+
+const notesPreview = computed(() =>
+  notes.value.filter((n) => !n.done).slice(0, 3)
+);
+
+function formatDateTime(v) {
+  if (!v) return "--";
+  if (Array.isArray(v)) {
+    const [y, m, d, hh, mm] = v;
+    return `${m}/${d} ${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  }
+  const s = String(v).replace("T", " ");
+  return s.slice(5, 16).replace("-", "/");
+}
+
+/* ===== Calendar (純前端) ===== */
+const viewYear = ref(new Date().getFullYear());
+const viewMonth = ref(new Date().getMonth());
+
+const calTitle = computed(
+  () => `${viewYear.value} / ${String(viewMonth.value + 1).padStart(2, "0")}`
+);
+
+function prevMonth() {
+  if (viewMonth.value === 0) { viewMonth.value = 11; viewYear.value -= 1; }
+  else viewMonth.value -= 1;
+}
+function nextMonth() {
+  if (viewMonth.value === 11) { viewMonth.value = 0; viewYear.value += 1; }
+  else viewMonth.value += 1;
+}
+
+const calendarCells = computed(() => {
+  const y = viewYear.value, m = viewMonth.value;
+  const first = new Date(y, m, 1);
+  const startDay = first.getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const prevDays = new Date(y, m, 0).getDate();
+
+  const today = new Date();
+  const ty = today.getFullYear(), tm = today.getMonth(), td = today.getDate();
+
+  const cells = [];
+  for (let i = 0; i < 42; i++) {
+    const dayIndex = i - startDay + 1;
+    let day, inMonth;
+
+    if (dayIndex <= 0) { day = prevDays + dayIndex; inMonth = false; }
+    else if (dayIndex > daysInMonth) { day = dayIndex - daysInMonth; inMonth = false; }
+    else { day = dayIndex; inMonth = true; }
+
+    cells.push({ day, inMonth, isToday: inMonth && y === ty && m === tm && day === td });
+  }
+  return cells;
+});
+
+/* ===== scroll helpers：你要把 ref 放到你原本 Items 區塊上 ===== */
+const addRef = ref(null);
+const listRef = ref(null);
+
+function scrollToAdd() {
+  addRef.value?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function scrollToList() {
+  listRef.value?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function goNotes() {
+  // 如果你沒有 /notes 頁，先不跳，或改成 router push
+  scrollToAdd();
+}
+
+onMounted(() => {
+  loadNotes();
+});
+
+
 </script>
 
 <style scoped>
@@ -796,4 +1058,98 @@ onMounted(async () => {
   .field { grid-column: span 12; }
   .row { flex-direction: column; }
 }
+
+.dash-hero{ padding: 18px 4px 10px; }
+.dash-title{ font-size: 28px; font-weight: 900; margin: 0; }
+.dash-sub{ margin: 10px 0 0; color: var(--muted); line-height: 1.7; }
+
+.dash-cards{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 12px;
+}
+.dash-card{
+  display:block;
+  background: rgba(255,255,255,.6);
+  border: 1px solid rgba(120,160,255,.35);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  box-shadow: 0 10px 25px rgba(20,60,140,.08);
+  text-decoration:none;
+  color: inherit;
+}
+.card-h{ font-weight: 900; font-size: 16px; }
+.card-p{ margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.card-link{ margin-top: 10px; font-weight: 800; color: #2a63ff; font-size: 13px; }
+
+.dash-row{
+  display:grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+.dash-panel{
+  background: rgba(255,255,255,.75);
+  border: 1px solid rgba(120,160,255,.35);
+  border-radius: 20px;
+  padding: 14px 14px 16px;
+  box-shadow: 0 10px 25px rgba(20,60,140,.08);
+}
+
+.panel-head{ display:flex; align-items:flex-start; justify-content:space-between; gap: 12px; }
+.panel-title{ font-weight: 900; font-size: 16px; }
+.panel-sub{ margin-top: 6px; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+
+.note-add{ margin-top: 12px; display:flex; gap: 10px; align-items:center; }
+.input{
+  width:100%;
+  border: 1px solid rgba(120,160,255,.35);
+  border-radius: 14px;
+  padding: 12px 14px;
+  outline:none;
+  background: rgba(255,255,255,.85);
+}
+
+.note-list{ margin-top: 12px; display:flex; flex-direction:column; gap: 10px; }
+.note-item{
+  display:flex; align-items:center; justify-content:space-between; gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(120,160,255,.25);
+  background: rgba(255,255,255,.7);
+}
+.note-left{ display:flex; align-items:center; gap: 10px; }
+.note-done{ text-decoration: line-through; color: #94a3b8; }
+.note-right{ display:flex; align-items:center; gap: 10px; color: var(--muted); font-size: 12px; }
+
+.empty-hint{ padding: 18px 6px; text-align:center; color: var(--muted); font-size: 13px; }
+
+.cal-nav{ display:flex; align-items:center; gap: 10px; }
+.cal-title{ font-weight: 900; min-width: 110px; text-align:center; }
+.icon-btn{
+  width: 34px; height: 34px; border-radius: 999px;
+  border: 1px solid rgba(120,160,255,.35);
+  background: rgba(255,255,255,.85);
+  font-size: 18px; cursor:pointer;
+}
+.cal-grid{ margin-top: 10px; }
+.cal-week{ display:grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 6px; }
+.cal-w{ text-align:center; font-size: 12px; color: var(--muted); font-weight: 800; }
+.cal-days{ display:grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.cal-cell{
+  height: 34px; border-radius: 10px;
+  display:flex; align-items:center; justify-content:center;
+  border: 1px solid rgba(120,160,255,.18);
+  background: rgba(255,255,255,.7);
+  font-weight: 700; color: #1f2a44;
+}
+.cal-muted{ opacity: .45; }
+.cal-today{ outline: 2px solid rgba(42,99,255,.45); }
+
+@media (max-width: 1100px){
+  .dash-cards{ grid-template-columns: repeat(2, 1fr); }
+  .dash-row{ grid-template-columns: 1fr; }
+}
+
 </style>
