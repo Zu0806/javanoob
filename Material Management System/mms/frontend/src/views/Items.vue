@@ -22,7 +22,7 @@
     <div class="card-link">支援房間查詢</div>
   </a>
 
-  <a class="dash-card" href="#" @click.prevent="scrollToList">
+  <a class="dash-card" href="#" @click.prevent="scrollToDay">
     <div class="card-h">過期查詢</div>
     <div class="card-p">查看已過期與 7 / 14 天內即將到期的物品。</div>
     <div class="card-link">到期提醒</div>
@@ -164,8 +164,8 @@
         </div>
 
         <div class="field">
-          <label>房間</label>
-          <input v-model.trim="form.room" type="text" placeholder="例如：廚房 / 客廳 / 倉庫" />
+          <label>家庭編號</label>
+          <input v-model.trim="form.room" type="text" placeholder="例如：小明家" />
         </div>
 
         <div class="field">
@@ -207,6 +207,7 @@
         <div class="actions">
           <button type="button" class="btn btn-primary" @click="onCreateClick">新增</button>
           <button type="button" class="btn btn-outline" @click="onSearchClick">查詢</button>
+          <button type="button" class="btn btn-outline" @click="applyPreset">自動填寫</button>
           <button type="button" class="btn btn-ghost" @click="resetForm">清空</button>
           <button type="button" class="btn btn-ghost" @click="reloadAll">重新載入</button>
         </div>
@@ -267,8 +268,15 @@
     <td>{{ it.location || '-' }}</td>
 
     <td>
-      {{ it.unit || '-' }} × {{ it.quantity ?? 0 }}
-    </td>
+  <span :class="['qty', (it.quantity ?? 0) < 2 ? 'qty-low' : '']">
+    {{ it.unit || '-' }} × {{ it.quantity ?? 0 }}
+  </span>
+
+  <span v-if="(it.quantity ?? 0) < 2" class="low-stock-badge">
+    庫存不足
+  </span>
+</td>
+
 
     <td>
       {{ it.expireDate || '-' }}
@@ -287,7 +295,7 @@
       <button
         class="btn btn-ghost btn-sm"
         type="button"
-        @click="openEditQty(it)"
+        @click="openQtyModal(it)"
       >
         更改數量
       </button>
@@ -308,7 +316,7 @@
     </section>
 
     <!-- ================== 過期/即將到期 ================== -->
-    <section class="section" id="section-expire">
+    <section ref="expiredRef" class="section" id="section-expire">
       <div class="section-header">
         <div>
           <div class="section-title">過期 / 即將到期物品</div>
@@ -426,7 +434,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import axios from "axios";
 
 
@@ -435,6 +444,39 @@ import axios from "axios";
 
 
 const items = ref([]);
+
+const route = useRoute();
+
+// ===== localStorage presets / recent categories =====
+const PRESET_KEY = "mms_last_item_preset";
+const RECENT_CATS_KEY = "mms_recent_categories";
+
+function safeJsonParse(str, fallback) {
+  try {
+    const v = JSON.parse(str);
+    return v ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function savePreset(preset) {
+  localStorage.setItem(PRESET_KEY, JSON.stringify(preset));
+}
+
+function getPreset() {
+  const raw = localStorage.getItem(PRESET_KEY);
+  return raw ? safeJsonParse(raw, null) : null;
+}
+
+function pushRecentCategory(cat) {
+  const c = (cat || "").trim();
+  if (!c) return;
+  const raw = localStorage.getItem(RECENT_CATS_KEY);
+  const list = raw ? safeJsonParse(raw, []) : [];
+  const next = [c, ...list.filter((x) => x !== c)].slice(0, 8);
+  localStorage.setItem(RECENT_CATS_KEY, JSON.stringify(next));
+}
 
 const meta = reactive({
   categories: [],
@@ -527,6 +569,43 @@ function resetForm() {
   categoryCustom.value = "";
   locationSelect.value = "";
   locationCustom.value = "";
+}
+
+// ---------- 自動填寫（從上次新增記錄套入） ----------
+function applyPreset() {
+  const p = getPreset();
+  if (!p) {
+    toastGreen("尚無可套用的自動填寫內容");
+    return;
+  }
+
+  // 先套 input 值
+  if (p.room) form.room = p.room;
+  if (p.unit) form.unit = p.unit;
+
+  // category / location 要同步到 select / custom
+  if (p.category) {
+    if ((meta.categories || []).includes(p.category)) {
+      categorySelect.value = p.category;
+      categoryCustom.value = "";
+    } else {
+      categorySelect.value = "__NEW__";
+      categoryCustom.value = p.category;
+    }
+  }
+
+  if (p.location) {
+    if ((meta.locations || []).includes(p.location)) {
+      locationSelect.value = p.location;
+      locationCustom.value = "";
+    } else {
+      locationSelect.value = "__NEW__";
+      locationCustom.value = p.location;
+    }
+  }
+
+  normalizeCategoryLocation();
+  toastGreen("已自動填寫部分欄位");
 }
 
 // ---------- date helpers ----------
@@ -705,8 +784,21 @@ async function doCreate(payload, forceNew) {
   try {
     await axios.post("/api/v2/items", payload, { params: { forceNew } });
     setSuccess(forceNew ? "已建立新的一筆！" : "新增成功（若同批次則已合併）！");
+
+    // 記錄「最近新增的類別」與「自動填寫」預設
+    pushRecentCategory(payload?.category);
+    savePreset({
+      room: payload?.room || "",
+      location: payload?.location || "",
+      unit: payload?.unit || "",
+      category: payload?.category || "",
+    });
+
+    // 通知 MainLayout 重新抓 meta (分類...)，讓 Drawer 按鈕更新
+    window.dispatchEvent(new Event("mms-meta-changed"));
+
     await fetchMeta();
-    await fetchItems();
+    await fetchItems(paramsFromRoute());
     location.hash = "#section-list";
   } catch (e) {
     console.error(e);
@@ -747,13 +839,31 @@ async function onSearchClick() {
   location.hash = "#section-list";
 }
 
+function paramsFromRoute() {
+  const q = route.query || {};
+  const location = typeof q.location === "string" ? q.location : "";
+  const category = typeof q.category === "string" ? q.category : "";
+  return {
+    location: location || undefined,
+    category: category || undefined,
+  };
+}
+
 onMounted(async () => {
   await fetchMeta();
-  await fetchItems();
   await loadNotes();
+
+  // 讓左上 Drawer 篩選（/items?location=..&category=..）可直接生效
+  watch(
+    () => ({ ...route.query }),
+    async () => {
+      await fetchItems(paramsFromRoute());
+    },
+    { immediate: true }
+  );
 });
 
-
+const expiredRef = ref(null);
 const notes = ref([]);
 const noteText = ref("");
 
@@ -840,14 +950,20 @@ function scrollToAdd() {
 function scrollToList() {
   listRef.value?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+
+function scrollToDay() {
+  expiredRef.value?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
 function goNotes() {
-  // 如果你沒有 /notes 頁，先不跳，或改成 router push
+  
   scrollToAdd();
 }
 
-onMounted(() => {
-  loadNotes();
-});
+
 
 
 </script>
@@ -931,6 +1047,33 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
+.qty{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qty-low{
+  border: 1px solid #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.low-stock-badge{
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  border: 1px solid #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .sub-title {
   font-weight: 700;
   color: #123763;
@@ -941,6 +1084,19 @@ onMounted(() => {
   font-size: 13px;
   color: var(--muted);
   margin: 6px 0 14px;
+}
+td.actions{
+  display: flex;
+  flex-wrap: nowrap;      /* 一排 */
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;    /* 避免換行 */
+}
+
+form.inline{
+  display: inline-block;
+  margin: 0;
 }
 
 /* Modal（如果 global.css 已有可刪，但保留不衝突） */
@@ -992,19 +1148,12 @@ onMounted(() => {
   margin-top: 12px;
 }
 
-/* Toast */
 .toast {
-  position: fixed;
-  left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%);
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(34, 197, 94, 0.92);
-  color: white;
-  font-size: 13px;
-  z-index: 10000;
+  max-width: 420px;
+  line-height: 1.4;
+  text-align: center;
 }
+
 
 /* RWD */
 @media (max-width: 900px) {
@@ -1012,16 +1161,11 @@ onMounted(() => {
   .row { flex-direction: column; }
 }
 
-.dash-hero{ padding: 18px 4px 10px; }
+.dash-hero{ max-width: 1280px; margin: 0 auto; padding: 18px 24px 10px; }
 .dash-title{ font-size: 28px; font-weight: 900; margin: 0; }
 .dash-sub{ margin: 10px 0 0; color: var(--muted); line-height: 1.7; }
 
-.dash-cards{
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-top: 12px;
-}
+.dash-cards{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 12px auto 0; max-width: 1280px; padding: 0 24px; }
 .dash-card{
   display:block;
   background: rgba(255,255,255,.6);
@@ -1036,12 +1180,7 @@ onMounted(() => {
 .card-p{ margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.7; }
 .card-link{ margin-top: 10px; font-weight: 800; color: #2a63ff; font-size: 13px; }
 
-.dash-row{
-  display:grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 16px;
-  margin-top: 16px;
-}
+.dash-row{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px auto 0; max-width: 1280px; padding: 0 24px; }
 .dash-panel{
   background: rgba(255,255,255,.75);
   border: 1px solid rgba(120,160,255,.35);
@@ -1103,6 +1242,26 @@ onMounted(() => {
 @media (max-width: 1100px){
   .dash-cards{ grid-template-columns: repeat(2, 1fr); }
   .dash-row{ grid-template-columns: 1fr; }
+}
+
+
+
+/* 讓下方原本的新增/查詢區塊寬度與 Dashboard 對齊 */
+.add-card{
+  max-width: 1280px;
+  margin: 16px auto 0;
+  width: 100%;
+}
+
+/* 小螢幕自動換行，避免卡片擠壓 */
+@media (max-width: 1100px){
+  .dash-cards{ grid-template-columns: repeat(2, 1fr); }
+  .dash-row{ grid-template-columns: 1fr; }
+  .dash-hero{ padding-left: 16px; padding-right: 16px; }
+  .dash-cards, .dash-row{ padding-left: 16px; padding-right: 16px; }
+}
+@media (max-width: 640px){
+  .dash-cards{ grid-template-columns: 1fr; }
 }
 
 </style>

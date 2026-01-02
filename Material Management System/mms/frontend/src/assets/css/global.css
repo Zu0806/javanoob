@@ -55,6 +55,7 @@
   }
   .topbar.shrink .topbar-inner{ height:54px; padding:0 16px; }
   .topbar.shrink .title{ font-weight:700; font-size:18px; letter-spacing:1px; }
+   
 
   .hamburger{
     width:40px; height:40px;
@@ -323,3 +324,185 @@
     table{ font-size:12px; }
     th,td{ padding:6px; }
   }
+:root{
+            --blue:#2f80ed;
+            --blue-dark:#1b4f9d;
+            --blue-light:#e3f2ff;
+            --border:#c8dcff;
+            --fg:#1f2933;
+            --muted:#6b7280;
+            --radius:16px;
+            --danger:#ef4444;
+            --success:#16a34a;
+        }
+
+        *{box-sizing:border-box}
+
+        body{
+            font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+            color:var(--fg);
+            margin:0;
+            /* ✅ 這裡使用了跟主頁一模一樣的背景漸層 */
+            background:
+                radial-gradient(circle at 0 0,rgba(47,128,237,.18),transparent 55%),
+                radial-gradient(circle at 100% 100%,rgba(37,99,235,.16),transparent 55%),
+                linear-gradient(135deg,#e6f3ff 0%,#f7fbff 45%,#e3f2ff 100%);
+            background-attachment:fixed;
+            padding: 20px;
+        }
+
+        /* 內容容器 (像一張大白紙浮在背景上) */
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        /* 標題區域 */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #f0f4f8;
+            padding-bottom: 16px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #123763;
+            letter-spacing: 1px;
+        }
+
+        /* 按鈕樣式 (與主頁一致) */
+        .btn {
+            cursor:pointer; border-radius:12px;
+            display:inline-flex; align-items:center; justify-content:center;
+            padding: 8px 16px; font-size:14px; text-decoration: none;
+            border: 1px solid transparent; transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg,#2f80ed,#2563eb);
+            color: #fff;
+        }
+        .btn-primary:hover { filter: brightness(1.1); }
+        
+        .btn-outline {
+            background: transparent;
+            border-color: #2f80ed;
+            color: #2f80ed;
+        }
+        .btn-outline:hover { background: #eef6ff; }
+
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 999px;
+        }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #eef2f6;
+        }
+        th {
+            background-color: #f8fafc;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 13px;
+        }
+        td {
+            font-size: 14px;
+            color: #334155;
+        }
+        
+        /* 已完成的行樣式 */
+        .done-row td {
+            color: #cbd5e1; /* 變淡 */
+            background-color: #fafbfc;
+        }
+        .done-row .content-text {
+            text-decoration: line-through;
+        }
+
+        /* 留言者標籤 */
+        .badge-user {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 600px) {
+            .container { padding: 15px; margin: 20px 10px; }
+            th, td { padding: 8px; font-size: 13px; }
+            .hide-mobile { display: none; } /* 手機版隱藏 ID 欄位 */
+        }
+/* ====== from items.html (table + buttons + inline forms) ====== */
+table{ border-collapse:collapse; width:100%; margin-top:10px; }
+th,td{
+  border:1px solid var(--border);
+  padding:8px;
+  vertical-align:top;
+  font-size:13px;
+  background:#ffffff;
+}
+th{ background:var(--blue-light); text-align:left; }
+
+.btn{
+  height:40px;
+  padding:0 14px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+  border-radius:12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  font-size:14px;
+}
+
+.btn-primary{
+  background:linear-gradient(135deg,#2f80ed,#2563eb);
+  color:#fff;
+  border-color:transparent;
+}
+.btn-primary:hover{ filter:brightness(1.05); }
+
+.btn-ghost{
+  background:#fff;
+  border:1px solid #2f80ed;
+  color:#1b4f9d;
+}
+.btn-ghost:hover{ background:#e7f1ff; }
+
+.btn-sm{
+  height:32px;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+}
+
+form.inline{ display:inline; }
+
+/* 讓操作欄不要被撐到超高（關鍵） */
+td.actions{ white-space:nowrap; }
+td.actions > *{ margin-right:6px; }
