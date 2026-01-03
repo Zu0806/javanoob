@@ -23,6 +23,16 @@
             "request": "launch",
             "mainClass": "main.Main",
             "projectName": "javanoob_251c5b71"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MmsApplication<mms>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.morris.mms.mms.MmsApplication",
+            "projectName": "mms",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
