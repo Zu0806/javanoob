@@ -490,7 +490,7 @@
             <label>名稱（查詢時必填）</label>
             <div class="ai-input-wrap">
               <input th:field="*{name}" id="nameField" placeholder="螺絲 M3 / 牛奶 / 洗衣精"/>
-              <button type="button" class="btn btn-ghost btn-sm btn-ai" id="btnAiSuggest">AI 填寫</button>
+              <button type="button" class="btn btn-ghost btn-sm btn-ai" id="btnAiSuggest">自動填寫</button>
             </div>
           </div>
 
@@ -514,13 +514,7 @@
 </div>
 
 
-          <div class="field">
-            <label>房間</label>
-            <select th:field="*{room}">
-              <option value="">選擇房間（查詢可用）</option>
-              <option th:each="room : ${rooms}" th:value="${room}" th:text="${room}">客廳</option>
-            </select>
-          </div>
+          
 
           <div class="field">
             <label>單位</label>
@@ -574,14 +568,14 @@
           <th>ID</th>
           <th>名稱 / 類別</th>
           <th>SKU</th>
-          <th>房間 / 儲位</th>
+          <th>儲位</th>
           <th>單位 / 數量</th>
           <th>有效期限</th>
           <th>操作</th>
         </tr>
         </thead>
         <tbody>
-        <!-- ✅ 不再用 it.lowStock / it.daysToExpire（避免 getter 炸掉） -->
+        
         <tr th:each="it : ${items}"
             th:classappend="${it.quantity != null and it.quantity <= 0} ? 'low-stock-row' : ''">
           <td th:text="${it.id}">1</td>
@@ -595,9 +589,7 @@
           <td th:text="${it.sku != null and !#strings.isEmpty(it.sku) ? it.sku : '-'}">SCREW-M3</td>
 
           <td>
-            <div style="font-size:11px; color:var(--muted);">
-              房間：<span th:text="${it.room != null and !#strings.isEmpty(it.room) ? it.room : '-'}">客廳</span>
-            </div>
+           
             <div>儲位：<strong th:text="${it.location != null and !#strings.isEmpty(it.location) ? it.location : 'UNASSIGNED'}">A1-3</strong></div>
           </td>
 
@@ -1016,7 +1008,7 @@
       formCS.submit();
     });
 
-    /* ====== AI 填寫 (不變) ====== */
+    
     const btnAiSuggest = document.getElementById('btnAiSuggest');
     function showGreenToast(msg){
       const t = document.createElement('div');
@@ -1044,15 +1036,15 @@
     async function aiFill() {
       const skuEl = document.getElementById('skuField') || document.querySelector('[name="sku"]');
       const name = (nameField?.value || '').trim();
-      if (!name) { alert('請先輸入名稱再使用 AI'); return; }
+      if (!name) { alert('請先輸入名稱再使用自動填寫'); return; }
       let res;
       try{
         res = await fetch('/ai/suggest', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name })
         });
-      }catch(e){ alert('AI 連線失敗：' + e.message); return; }
-      if(!res.ok){ const text = await res.text(); alert('AI 服務錯誤：' + text); return; }
+      }catch(e){ alert('自動填寫連線失敗：' + e.message); return; }
+      if(!res.ok){ const text = await res.text(); alert('服務錯誤：' + text); return; }
       const data = await res.json();
       if (data.sku && skuEl) skuEl.value = data.sku;
       if (data.location) applyLocationToUI(data.location);
@@ -1071,9 +1063,9 @@
             if (catInput) { catInput.style.display = ''; catInput.value = data.category; }
             }
         }
-        showGreenToast(`AI 建議類別：${data.category}`);
+        showGreenToast(`建議類別：${data.category}`);
       }
-      const msg = `AI 已填寫：SKU=${data.sku || '-'} / 儲位=${data.location || '-'}` + (data.reason ? `（${data.reason}）` : '');
+      const msg = `已填寫：SKU=${data.sku || '-'} / 儲位=${data.location || '-'}` + (data.reason ? `（${data.reason}）` : '');
       showGreenToast(msg);
     }
     btnAiSuggest?.addEventListener('click', ()=> aiFill());

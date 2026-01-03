@@ -8,12 +8,30 @@ FLUSH PRIVILEGES;
 cd "F:\javanoob\Material Management System\mms" 
 dir
 .\mvnw.cmd spring-boot:run
-http://localhost:9090/items
 
+http://localhost:5173/
 
+npm install
+npm run dev
 
 
 solve for java version error (we need java 21)
 set "JAVA_HOME=C:\Program Files\Java\jdk-21"
 set "PATH=%JAVA_HOME%\bin;%PATH%"
+.\mvnw.cmd -v
+後端開啟
+.\mvnw.cmd spring-boot:run
+
+前端初次設定(terminal)請先下載 node js 24.12  並在vscode extension 安裝vue offical
+npm create vite@latest frontend -- --template vue
+npm i vue-router@4
+npm i axios
+前端開啟
+cd frontend
+npm install
+npm run dev
+
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+java -version
 .\mvnw.cmd -v

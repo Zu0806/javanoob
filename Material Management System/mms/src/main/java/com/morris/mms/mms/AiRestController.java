@@ -6,17 +6,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/ai1")
-public class AiSuggestController {
+@RequestMapping("/ai")
+public class AiRestController {
 
-    private final AiSuggestService service;
+    private final AiSuggestService ai;
 
-    public AiSuggestController(AiSuggestService service) {
-        this.service = service;
+    public AiRestController(AiSuggestService ai) {
+        this.ai = ai;
     }
 
+    public static class Req { public String name; }
+
     @PostMapping("/suggest")
-    public AiSuggestResponse suggest(@RequestBody AiSuggestRequest req) {
-        return service.suggest(req == null ? null : req.getName());
+    public AiSuggestResponse suggest(@RequestBody Req req) {
+        return ai.suggest(req == null ? "" : req.name);
     }
 }
